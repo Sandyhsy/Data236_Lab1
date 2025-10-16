@@ -22,6 +22,7 @@ export const api = {
   logout: () => req("/auth/logout", { method: "POST" }),
 
   ownerMe: () => req("/owner/me"),
+  TravelerMe: () => req("/profile"),
   ownerUpdate: (data) => req("/owner/me", { method: "PUT", body: data }),
   dashboard: () => req("/owner/dashboard"),
 
@@ -30,6 +31,7 @@ export const api = {
   updateProperty: (id, data) => req(`/properties/${id}`, { method: "PUT", body: data }),
   deleteProperty: (id) => req(`/properties/${id}`, { method: "DELETE" }),
   deleteS3Object: (url) => req("/uploads/s3-delete", { method: "POST", body: { url } }),
+  profileUpdate: (data) => req("/profile", { method: "PUT", body: data }),
 
   presignUpload: ({ property_id, filename, contentType }) => req("/uploads/s3-presign", { method: "POST", body: { property_id, filename, contentType } }),
   // temp presign for create mode (no property_id yet)

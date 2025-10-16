@@ -4,10 +4,10 @@ import { pool } from "../db.js";
 
 const router = Router();
 
-// POST /api/auth/signup (owner)
+// POST /api/auth/signup 
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password, city, country } = req.body;
+    const { name, email, password, city, country, role } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -18,11 +18,11 @@ router.post("/signup", async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const [result] = await pool.query(
       `INSERT INTO users (role, name, email, password_hash, city, country)
-       VALUES ('owner', ?, ?, ?, ?, ?)`,
-      [name, email, hash, city || null, country || null]
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [role, name, email, hash, city || null, country || null]
     );
     // Start session
-    req.session.user = { user_id: result.insertId, role: "owner", name, email };
+    req.session.user = { user_id: result.insertId, role: role, name, email };
     res.status(201).json({ message: "Owner created", user: req.session.user });
   } catch (err) {
     console.error(err);
@@ -30,13 +30,13 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// POST /api/auth/login (owner only)
+// POST /api/auth/login 
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
     const [rows] = await pool.query(
-      "SELECT user_id, role, name, email, password_hash FROM users WHERE email = ? AND role = 'owner'",
-      [email]
+      "SELECT user_id, role, name, email, password_hash FROM users WHERE email = ? AND role = ?",
+      [email, role]
     );
     if (rows.length === 0) return res.status(401).json({ error: "Invalid credentials" });
 
