@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { api } from "../api";
 
-export default function Signup({ onSignup }) {
+export default function Signup_Travel({ onSignup }) {
   const [form, setForm] = useState({ name: "", email: "", password: "", city: "", country: "" });
   const [err, setErr] = useState("");
 
@@ -9,7 +9,7 @@ export default function Signup({ onSignup }) {
     e.preventDefault();
     setErr("");
     try{
-      const d = await api.signup({...form, role: "owner"});
+      const d = await api.signup({...form, role: "traveler"});
       onSignup(d.user);
     }catch(e){
       setErr(e.message);
@@ -20,7 +20,7 @@ export default function Signup({ onSignup }) {
     <div className="container py-4">
       <div className="card">
         <div className="card-body">
-          <h6 className="fw-bold mb-3">Owner Sign up</h6>
+          <h6 className="fw-bold mb-3">Traveler Sign up</h6>
           <form onSubmit={submit}>
             <div className="row g-3">
               <div className="col-md-6">
@@ -34,14 +34,6 @@ export default function Signup({ onSignup }) {
               <div className="col-md-6">
                 <label className="form-label">Password</label>
                 <input className="form-control" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})}/>
-              </div>
-              <div className="col-md-3">
-                <label className="form-label">City</label>
-                <input className="form-control" value={form.city} onChange={e=>setForm({...form, city:e.target.value})}/>
-              </div>
-              <div className="col-md-3">
-                <label className="form-label">Country</label>
-                <input className="form-control" value={form.country} onChange={e=>setForm({...form, country:e.target.value})}/>
               </div>
               <div className="col-12 d-flex justify-content-end">
                 <button className="btn btn-danger" type="submit">Create account</button>

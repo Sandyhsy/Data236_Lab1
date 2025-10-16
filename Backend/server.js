@@ -10,6 +10,8 @@ import propertyRoutes from "./routes/properties.js";
 import bookingRoutes from "./routes/bookings.js";
 import uploadRoutes from "./routes/uploads.js";
 import propertyImageRoutes from "./routes/images.js";
+import profileRoutes from "./routes/profile.js";
+
 
 const app = express();
 
@@ -47,6 +49,7 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/properties", propertyImageRoutes);
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
+app.use("/api",profileRoutes)
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));

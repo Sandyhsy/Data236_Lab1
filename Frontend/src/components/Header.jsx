@@ -1,12 +1,17 @@
 import React from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useLocation } from "react-router-dom";
 
 export default function Header({ user, onLogout }) {
+
+  const path = useLocation().pathname
+
+  const amTraveler = path.toLowerCase().startsWith("/traveler")
+
   return (
     <nav className="navbar navbar-expand-lg bg-white border-bottom sticky-top">
       <div className="container">
         <Link to="/" className="navbar-brand">
-          <span className="brand-dot" /> <span className="brand-text">Host</span>
+          <span className="brand-dot" /> <span className="brand-text">HOME</span>
         </Link>
         <button
           className="navbar-toggler"
@@ -31,8 +36,14 @@ export default function Header({ user, onLogout }) {
                   <button className="btn btn-outline-secondary ms-lg-2" onClick={onLogout}>Logout</button>
                 </li>
               </>
-            ) : (
+            ) : 
+              amTraveler ? (
               <>
+                <li className="nav-item"><NavLink to="/traveler/login" className="nav-link">Login</NavLink></li>
+                <li className="nav-item"><NavLink to="/traveler/signup" className="nav-link">Sign up</NavLink></li>
+              </>
+            ): (
+                            <>
                 <li className="nav-item"><NavLink to="/login" className="nav-link">Login</NavLink></li>
                 <li className="nav-item"><NavLink to="/signup" className="nav-link">Sign up</NavLink></li>
               </>

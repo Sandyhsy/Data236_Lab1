@@ -20,7 +20,7 @@ export default function Profile() {
 
   useEffect(() => {
     async function init() {
-      const u = await api.TravelerMe();
+      const u = await api.ownerMe();
       setMe(u);
       setForm({
         name: u.name || "",
@@ -79,7 +79,12 @@ export default function Profile() {
       gender: form.gender || null,
       profile_picture: form.profile_picture || null
     };
+    if (me.role == "owner"){
+    await api.ownerUpdate(payload);
+    }
+    else{
     await api.profileUpdate(payload)
+    }
     setMsg("Saved");
   }
 
