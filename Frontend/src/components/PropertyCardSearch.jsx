@@ -1,9 +1,10 @@
 import React from "react";
 
-export default function PropertyCard({ p, onEdit, onDelete }) {
+export default function PropertyCardSearch({ p, onEdit, onDelete }) {
   return (
     <div className="card h-100">
-      {p.first_image_url && <img className="img-cover" src={p.first_image_url} alt={p.name} />}
+      {/* {p.first_image_url && <img className="img-cover" src={p.first_image_url} alt={p.name} />} */}
+      <img className="img-cover" src="https://placehold.co/360x200?text=Property" />
       <div className="card-body d-flex flex-column">
         <h5 className="card-title fw-bold">{p.name}</h5>
         <div className="mb-2 d-flex flex-wrap gap-2">
@@ -14,22 +15,6 @@ export default function PropertyCard({ p, onEdit, onDelete }) {
           {p.price_per_night != null && <span className="badge text-bg-danger">${Number(p.price_per_night).toFixed(2)}/night</span>}
         </div>
         {p.description && <p className="text-secondary small mb-3">{p.description}</p>}
-        <div className="mt-auto d-flex gap-2">
-          {(onEdit || onDelete) && (
-            <div className="mt-auto d-flex gap-2">
-              {onEdit && (
-                <button className="btn btn-outline-secondary" onClick={() => onEdit(p)}>
-                  Edit
-                </button>
-              )}
-              {onDelete && (
-                <button className="btn btn-danger" onClick={() => onDelete(p)}>
-                  Delete
-                </button>
-              )}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
