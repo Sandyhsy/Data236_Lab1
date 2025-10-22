@@ -98,6 +98,13 @@ router.get("/:id/images", requireOwner, async (req, res) => {
   res.json(rows);
 });
 
+router.get("/:id", async (req,res) => {
+  const { id } = req.params;
+  const [rows] = await pool.query("SELECT * FROM properties WHERE property_id = ?", [id]);
+  if (rows.length === 0) return res.status(404).json({ error: "Property not found" });
+  res.json(rows[0]);
+});
+
 // PUT /api/properties/:id/images - replace images for my property
 router.put("/:id/images", requireOwner, async (req, res) => {
   const { user_id } = req.session.user;

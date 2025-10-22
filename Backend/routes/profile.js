@@ -8,7 +8,7 @@ router.get("/profile", async (req, res) => {
   const [rows] = await pool.query(
     `SELECT user_id, role, name, email, phone, about_me, city, country, languages, gender, profile_picture, created_at
      FROM users
-     WHERE user_id = ? AND role = 'traveler'`,
+     WHERE user_id = ?`,
     [user_id]
   );
   if (rows.length === 0) return res.status(404).json({ error: "traveler not found" });
@@ -29,14 +29,14 @@ router.put("/profile", async (req, res) => {
        languages = COALESCE(?, languages),
        gender = COALESCE(?, gender),
        profile_picture = COALESCE(?, profile_picture)
-     WHERE user_id = ? AND role = 'traveler'`,
+     WHERE user_id = ?`,
     [name, phone, about_me, city, country, languages, gender, profile_picture, user_id]
   );
 
   const [rows] = await pool.query(
     `SELECT user_id, role, name, email, phone, about_me, city, country, languages, gender, profile_picture, created_at
      FROM users
-     WHERE user_id = ? AND role = 'traveler'`,
+     WHERE user_id = ?`,
     [user_id]
   );
   res.json(rows[0]);

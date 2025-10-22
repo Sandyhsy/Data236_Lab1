@@ -27,11 +27,15 @@ export const api = {
   dashboard: () => req("/owner/dashboard"),
 
   myProperties: () => req("/properties/mine"),
+  myfavorites: () => req("/favorites"),
+  loadAllProperties: () => req("/search"),
+  searchProperty: (data) => req("/search/properties", { method: "POST", body: data }),
   createProperty: (data) => req("/properties", { method: "POST", body: data }),
   updateProperty: (id, data) => req(`/properties/${id}`, { method: "PUT", body: data }),
   deleteProperty: (id) => req(`/properties/${id}`, { method: "DELETE" }),
   deleteS3Object: (url) => req("/uploads/s3-delete", { method: "POST", body: { url } }),
   profileUpdate: (data) => req("/profile", { method: "PUT", body: data }),
+  getProperty: (id) => req(`/properties/${id}`),
 
   presignUpload: ({ property_id, filename, contentType }) => req("/uploads/s3-presign", { method: "POST", body: { property_id, filename, contentType } }),
   // temp presign for create mode (no property_id yet)
@@ -45,6 +49,10 @@ export const api = {
 
   // Profile picture presign
   presignProfileUpload: ({ filename, contentType }) => req("/uploads/s3-presign-profile", { method: "POST", body: { filename, contentType } }),
+
+ // In api.js
+addFavorite: (property_id, user_id) => req("/favorites", { method: "POST", body: { property_id, user_id } }),
+
 
   incoming: () => req("/bookings/incoming"),
   history: () => req("/bookings/history"),

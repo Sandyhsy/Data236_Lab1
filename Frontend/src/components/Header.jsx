@@ -29,9 +29,14 @@ export default function Header({ user, onLogout }) {
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
             {user ? (
               <>
+              <li className="nav-item"><NavLink to="/search" className="nav-link">Find</NavLink></li>
                 <li className="nav-item"><NavLink to="/dashboard" className="nav-link">Dashboard</NavLink></li>
-                <li className="nav-item"><NavLink to="/properties" className="nav-link">My Properties</NavLink></li>
                 <li className="nav-item"><NavLink to="/profile" className="nav-link">Profile</NavLink></li>
+                {user.role !== "traveler" && (
+                  <li className="nav-item">
+                    <NavLink to="/properties" className="nav-link">My Properties</NavLink>
+                  </li>
+                )}
                 <li className="nav-item">
                   <button className="btn btn-outline-secondary ms-lg-2" onClick={onLogout}>Logout</button>
                 </li>
@@ -39,11 +44,14 @@ export default function Header({ user, onLogout }) {
             ) : 
               amTraveler ? (
               <>
+              
                 <li className="nav-item"><NavLink to="/traveler/login" className="nav-link">Login</NavLink></li>
                 <li className="nav-item"><NavLink to="/traveler/signup" className="nav-link">Sign up</NavLink></li>
+                
               </>
             ): (
                             <>
+                
                 <li className="nav-item"><NavLink to="/login" className="nav-link">Login</NavLink></li>
                 <li className="nav-item"><NavLink to="/signup" className="nav-link">Sign up</NavLink></li>
               </>
