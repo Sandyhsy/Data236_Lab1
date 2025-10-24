@@ -1,14 +1,8 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+
 export default function PropertyCardSearch({ p, onEdit, onDelete }) {
-
-  const nav = useNavigate();
-
   return (
-    <div className="card h-100"
-    style={{ cursor: "pointer" }}
-    onClick={() => nav(`/property/${p.property_id}`)}
-    >
+    <div className="card h-100">
       {/* {p.first_image_url && <img className="img-cover" src={p.first_image_url} alt={p.name} />} */}
       <img className="img-cover" src="https://placehold.co/360x200?text=Property" />
       <div className="card-body d-flex flex-column">

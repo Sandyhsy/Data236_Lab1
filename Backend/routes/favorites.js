@@ -25,29 +25,13 @@ router.post("/", async (req, res) => {
   const pid = req.body.property_id
   if (!uid || !pid) return res.status(400).json({ error: "user_id and property_id are required" });
 
-
-  const[ exists] = await pool.query(
-    'select favorite_id from favorites where  traveler_id = ? and property_id =?',
-    [uid,pid]
-   )
-
-   if (exists.length >0 ){
-    await pool.query(
-      'delete from favorites where  traveler_id = ? and property_id =?',
-    [uid,pid])
-    return res.status(201).json({message: "Favorite removed"})
-   }
-   else
-   {
-  await pool.query(
+  const [result] = await pool.query(
     `INSERT INTO favorites (traveler_id, property_id) values
      (?, ?)`,
     [uid, pid]
-  )
-    return res.status(201).json({message: "Favorite added"})
-   }
-  
-  res.status(500).json({error: "Internal server error"});
+  );
+    const [rows] = await pool.query("SELECT * FROM favorites WHERE favorite_id = ?", [result.insertId]);
+  res.status(201).json(rows[0]);
 });
 
 export default router;

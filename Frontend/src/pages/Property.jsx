@@ -45,14 +45,16 @@ export default function Property() {
   }, [id]);
 
     async function clickFavorite() {
+    // if (!property || favBusy) return;
+    // setFavBusy(true);
     const pid = Number(id)
     const u = await api.TravelerMe();
     const uid = Number(u.user_id)
     try {
-        const resp = await api.addFavorite(pid,uid);
-        alert(resp.message)
+        await api.addFavorite(pid,uid);
     } catch (e) {
       console.error("Favorite toggle failed", e);
+      // Optional: show a toast/alert
     }
   }
 

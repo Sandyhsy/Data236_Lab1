@@ -26,71 +26,37 @@ export default function Header({ user, onLogout }) {
         </button>
 
         <div id="navMain" className="collapse navbar-collapse">
-  <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
-    {user ? (
-      <>
-        {/* Shared when logged in */}
-        <li className="nav-item">
-          <NavLink to="/search" className="nav-link">Find</NavLink>
-        </li>
-
-        {/* Traveler-only */}
-        {user.role === "traveler" ? (
-          <>
-            <li className="nav-item">
-              <NavLink to="/favorite" className="nav-link">Favorites</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/history" className="nav-link">History</NavLink>
-            </li>
-          </>
-        ) : (
-          /* Owner-only */
-          <>
-            <li className="nav-item">
-              <NavLink to="/properties" className="nav-link">My Properties</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/dashboard" className="nav-link">Dashboard</NavLink>
-            </li>
-          </>
-        )}
-
-        {/* Shared */}
-        <li className="nav-item">
-          <NavLink to="/profile" className="nav-link">Profile</NavLink>
-        </li>
-        <li className="nav-item">
-          <button className="btn btn-outline-secondary ms-lg-2" onClick={onLogout}>
-            Logout
-          </button>
-        </li>
-      </>
-    ) : (
-      // Logged out
-      <>
-        {amTraveler ? (
-          <>
-            <li className="nav-item">
-              <NavLink to="/traveler/login" className="nav-link">Login</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/traveler/signup" className="nav-link">Sign up</NavLink>
-            </li>
-          </>
-        ) : (
-          <>
-            <li className="nav-item">
-              <NavLink to="/login" className="nav-link">Login</NavLink>
-            </li>
-            <li className="nav-item">
-              <NavLink to="/signup" className="nav-link">Sign up</NavLink>
-            </li>
-          </>
-        )}
-      </>
-    )}
-  </ul>
+          <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+            {user ? (
+              <>
+              <li className="nav-item"><NavLink to="/search" className="nav-link">Find</NavLink></li>
+                <li className="nav-item"><NavLink to="/dashboard" className="nav-link">Dashboard</NavLink></li>
+                <li className="nav-item"><NavLink to="/profile" className="nav-link">Profile</NavLink></li>
+                {user.role !== "traveler" && (
+                  <li className="nav-item">
+                    <NavLink to="/properties" className="nav-link">My Properties</NavLink>
+                  </li>
+                )}
+                <li className="nav-item">
+                  <button className="btn btn-outline-secondary ms-lg-2" onClick={onLogout}>Logout</button>
+                </li>
+              </>
+            ) : 
+              amTraveler ? (
+              <>
+              
+                <li className="nav-item"><NavLink to="/traveler/login" className="nav-link">Login</NavLink></li>
+                <li className="nav-item"><NavLink to="/traveler/signup" className="nav-link">Sign up</NavLink></li>
+                
+              </>
+            ): (
+                            <>
+                
+                <li className="nav-item"><NavLink to="/login" className="nav-link">Login</NavLink></li>
+                <li className="nav-item"><NavLink to="/signup" className="nav-link">Sign up</NavLink></li>
+              </>
+            )}
+          </ul>
         </div>
       </div>
     </nav>

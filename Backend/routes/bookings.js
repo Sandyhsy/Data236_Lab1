@@ -4,20 +4,6 @@ import { requireOwner } from "../middleware/requireOwner.js";
 
 const router = Router();
 
-router.get("/", async(req,res)=>{
-  const { user_id } = req.session.user;
-  const [bookings] = await pool.query(
-    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
-            p.name AS property_name
-     FROM bookings b
-     left JOIN properties p ON b.property_id = p.property_id
-     where b.status IN ('ACCEPTED')
-     ORDER BY b.created_at DESC`,
-    [user_id]
-  );  
-  res.json(bookings)
-})
-
 // GET /api/bookings/incoming - bookings for properties owned by the owner
 router.get("/incoming", requireOwner, async (req, res) => {
   const { user_id } = req.session.user;
