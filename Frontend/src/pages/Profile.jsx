@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { api } from "../api";
+import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
+
 
 export default function Profile() {
   const fileRef = useRef(null);
@@ -155,26 +157,28 @@ export default function Profile() {
                     />
                   </div>
 
+                      {/* Country (stores 'US', 'CA', ...) and shows 'US', 'CA', ... */}
+                      
                   <div className="col-md-6">
                     <label className="form-label">Country</label>
-                    <input
-                      className="form-control"
-                      value={form.country}
-                      onChange={e=>setForm({...form, country:e.target.value})}
-                      placeholder="e.g., United States"
-                    />
+                      <CountryDropdown
+                        value={form.country}
+                        onChange={(val) => setForm(prev => ({ ...prev, country: val, city: "" }))}
+                        className="form-select"
+                      />
                   </div>
-
-                  <div className="col-md-6">
+                    <div className="col-md-6">
                     <label className="form-label">City</label>
-                    <input
-                      className="form-control"
-                      value={form.city}
-                      onChange={e=>setForm({...form, city:e.target.value})}
-                      placeholder="e.g., San Francisco"
-                    />
+                      <RegionDropdown
+                        country={form.country}
+                        value={form.city}
+                        onChange={(val) => setForm(prev => ({ ...prev, city: val }))}
+                        className="form-select"
+                        valueType="short"         // store "CA", "NY", ...
+                        labelType="short"         // show "CA", "NY", ...
+                        disableWhenEmpty
+                      />
                   </div>
-
                   <div className="col-md-6">
                     <label className="form-label">Gender</label>
                     <input
