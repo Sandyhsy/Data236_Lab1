@@ -13,7 +13,6 @@ import Login_Travel from "./pages/Login_Travel";
 import Signup_Travel from "./pages/Signup_Travel";
 import PropertySearch from "./pages/PropertySearch";
 import Property from "./pages/Property";
-import History from "./pages/History";
 
 import FavoriteList from "./pages/FavoriteList";
 
@@ -51,7 +50,6 @@ export default function App() {
           <Route path="/search" element={isAuthed ? <PropertySearch edit /> : <Navigate to="/login" />} />
           <Route path="/property/:id" element={<Property />} />
           <Route path="/favorite" element={<FavoriteList />} />
-          <Route path="/history" element={<History />} />
         </Routes>
       </div>
     </>
