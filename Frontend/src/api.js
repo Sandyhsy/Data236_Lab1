@@ -36,6 +36,7 @@ export const api = {
   deleteS3Object: (url) => req("/uploads/s3-delete", { method: "POST", body: { url } }),
   profileUpdate: (data) => req("/profile", { method: "PUT", body: data }),
   getProperty: (id) => req(`/properties/${id}`),
+  getbookings: () => req("/bookings"),
 
   presignUpload: ({ property_id, filename, contentType }) => req("/uploads/s3-presign", { method: "POST", body: { property_id, filename, contentType } }),
   // temp presign for create mode (no property_id yet)
