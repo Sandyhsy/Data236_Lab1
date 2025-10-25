@@ -2,9 +2,11 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 
-export default function BookingCard({ b }) {
+export default function HistoryCard({ b }) {
   const nav = useNavigate();
 
+  if (!b) {return null;}
+  console.log("HistoryCard booking:", b);
 
   return (
     <div className="card">

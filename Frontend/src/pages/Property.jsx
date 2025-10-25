@@ -20,15 +20,15 @@ export default function Property() {
     bathrooms: "",
     profile_picture: ""
   });
-
-  const [bookings, setBookings] = useState([]);
-   const [checkout, setCheckout] = useState(null);
-     const [checkin, setCheckin] = useState(null);
-
+  const [guestCount, setGuestCount] = useState(1);
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(new Date());
+  const [excludeDates, setExcludeDates] = useState([]);
 
   useEffect(() => {
     async function init() {
       const p = await api.getProperty(id);
+      const d = await api.getBookedDates(id);
       setProperty({
         name: p.name || "",
         profile_picture: p.profile_picture || "",
@@ -37,9 +37,7 @@ export default function Property() {
         bathrooms: p.bathrooms || "",
         amenities: p.amenities || ""
       });
-
-        const b = await api.getBooking(id);
-        setBookings(Array.isArray(b) ? b : []);
+      setExcludeDates(Array.isArray(d) ? d : []);
     }
     init();
   }, [id]);
@@ -56,9 +54,39 @@ export default function Property() {
     }
   }
 
-const excludeIntervals = bookings
-  .filter(b => b.start_date && b.end_date)
-  .map(b => ({ start: new Date(b.start_date), end: new Date(b.end_date) }));
+  async function handleSubmitBooking() {
+
+    if (startDate >= endDate) {
+      alert("Check-out date must be after check-in date");
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      alert("Please select both check-in and check-out dates");
+      return;
+    }
+
+    if (endDate <= Date.now()) {
+      alert("Booking dates must be in the future");
+      return;
+    }
+
+    if(guestCount < 1) {
+      alert("At least one guest is required");
+      return; 
+    }
+
+    try {
+      const resp = await api.createBooking({
+        property_id: Number(id),
+        start_date: startDate,
+        end_date: endDate,
+      });
+      alert("Booking request submitted");
+    } catch (e) {
+      alert(`Booking failed: ${e.message}`);
+    }
+  }
 
   return (
     <div className="container py-4">
@@ -110,29 +138,42 @@ const excludeIntervals = bookings
     <h6 className="mb-3">Select your dates</h6>
     <div className="row g-2">
             <div className="col-12 col-md-6">
-              <label className="form-label">Check-in</label>
+              <label className="form-label">Check-in:</label>
               <DatePicker
-                
-                selectsStart
-                startDate={checkin}
-                endDate={checkout}
-                excludeDateIntervals={excludeIntervals}
+                selected={startDate}
+                onChange={(date) => setStartDate(date)}
+                excludeDateIntervals={excludeDates}
                 placeholderText="Choose a check-in date"
                 className="form-control"
               />
             </div>
-
             <div className="col-12 col-md-6">
-              <label className="form-label">Check-out</label>
+              <label className="form-label">Check-out:</label>
               <DatePicker
-                selectsEnd
-                startDate={checkin}
-                endDate={checkout}
-                excludeDateIntervals={excludeIntervals}
+                selected={endDate}
+                onChange={(date) => setEndDate(date)}
+                excludeDateIntervals={excludeDates}
                 placeholderText="Choose a check-out date"
                 className="form-control"
               />
             </div>
+            <div className="col-12 col-md-6">
+              <label className="form-label">Guests:</label>
+              <input
+                type="number"
+                min={1}
+                value={guestCount}
+                onChange={(i) => setGuestCount(Number(i.target.value))}
+                className="form-control"
+              />
+            </div>
+                        <div className="col-12 col-md-6">
+                <button className="btn btn-success mt-4"
+                onClick={handleSubmitBooking}
+                disabled={!startDate || !endDate}
+                title={!startDate ? "Pick check-in first" : (!endDate ? "Pick check-out" : "Submit")}
+              > reserve</button>
+              </div>
     </div>
 
   </div>
