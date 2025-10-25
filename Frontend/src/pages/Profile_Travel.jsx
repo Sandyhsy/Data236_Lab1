@@ -66,7 +66,7 @@ export default function Profile() {
       setUploading(false);
     }
   }
-
+  
   async function save(e) {
     e.preventDefault();
     setMsg("");
@@ -81,12 +81,7 @@ export default function Profile() {
       gender: form.gender || null,
       profile_picture: form.profile_picture || null
     };
-    if (me.role == "owner"){
-    await api.ownerUpdate(payload);
-    }
-    else{
     await api.profileUpdate(payload)
-    }
     setMsg("Saved");
   }
 
@@ -140,7 +135,7 @@ export default function Profile() {
                     <input
                       className="form-control"
                       value={form.name}
-                      onChange={e=>setForm({...form, name:e.target.value})}
+                      onChange={e => setForm({ ...form, name: e.target.value })}
                     />
                   </div>
                   <div className="col-md-6">
@@ -148,7 +143,7 @@ export default function Profile() {
                     <input
                       className="form-control"
                       value={form.phone}
-                      onChange={e=>setForm({...form, phone:e.target.value})}
+                      onChange={e => setForm({ ...form, phone: e.target.value })}
                     />
                   </div>
 
@@ -158,27 +153,27 @@ export default function Profile() {
                       className="form-control"
                       rows={3}
                       value={form.about_me}
-                      onChange={e=>setForm({...form, about_me:e.target.value})}
+                      onChange={e => setForm({ ...form, about_me: e.target.value })}
                     />
                   </div>
 
                   <div className="col-md-6">
                     <label className="form-label">Country</label>
-                      <CountryDropdown
-                        value={form.country}
-                        onChange={(val) => setForm(prev => ({ ...prev, country: val, city: "" }))}
-                      />
+                    <CountryDropdown
+                      value={form.country}
+                      onChange={(val) => setForm(prev => ({ ...prev, country: val, city: "" }))}
+                    />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label">City</label>
-                      <RegionDropdown
-                        country={form.country}
-                        value={form.city}
-                        onChange={(val) => setForm(prev => ({ ...prev, city: val }))}
-                        className="form-select"
-                        disableWhenEmpty
-                        defaultOptionLabel="Select Region"
-                      />
+                    <RegionDropdown
+                      country={form.country}
+                      value={form.city}
+                      onChange={(val) => setForm(prev => ({ ...prev, city: val }))}
+                      className="form-select"
+                      disableWhenEmpty
+                      defaultOptionLabel="Select Region"
+                    />
                   </div>
 
                   <div className="col-md-6">
@@ -186,7 +181,7 @@ export default function Profile() {
                     <input
                       className="form-control"
                       value={form.gender}
-                      onChange={e=>setForm({...form, gender:e.target.value})}
+                      onChange={e => setForm({ ...form, gender: e.target.value })}
                       placeholder="female, male, or don't want to tell"
                     />
                   </div>
@@ -196,7 +191,7 @@ export default function Profile() {
                     <input
                       className="form-control"
                       value={form.languages}
-                      onChange={e=>setForm({...form, languages:e.target.value})}
+                      onChange={e => setForm({ ...form, languages: e.target.value })}
                       placeholder="Comma separated, e.g., English, Mandarin"
                     />
                   </div>
