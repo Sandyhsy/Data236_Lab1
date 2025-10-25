@@ -10,13 +10,72 @@ router.get("/", async(req,res)=>{
     `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
             p.name AS property_name
      FROM bookings b
-     left JOIN properties p ON b.property_id = p.property_id
-     where b.status IN ('ACCEPTED')
+    JOIN properties p ON b.property_id = p.property_id
+     where b.traveler_id = ? and  b.status IN ('ACCEPTED') and end_date < NOW()
      ORDER BY b.created_at DESC`,
     [user_id]
   );  
+  console.log("bookings fetched:", bookings);
   res.json(bookings)
 })
+
+router.get("/status", async(req,res)=>{
+  const { user_id } = req.session.user;
+  const [acceptedRequests] = await pool.query(
+    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
+            p.name AS property_name
+     FROM bookings b
+     JOIN properties p ON b.property_id = p.property_id
+     WHERE b.traveler_id = ? and b.status = 'ACCEPTED' and b.start_date >= NOW()
+     ORDER BY b.created_at DESC`,
+    [user_id]
+  );
+
+  const [canceledRequests] = await pool.query(
+    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
+            p.name AS property_name
+     FROM bookings b
+     JOIN properties p ON b.property_id = p.property_id
+     WHERE b.traveler_id = ? and b.status = 'CANCELLED' 
+     ORDER BY b.created_at DESC`,
+    [user_id]
+  );
+
+
+  const [pendingRequests] = await pool.query(
+    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
+            p.name AS property_name
+     FROM bookings b
+     JOIN properties p ON b.property_id = p.property_id
+     WHERE b.traveler_id = ? and b.status = 'PENDING' 
+     ORDER BY b.created_at DESC`,
+    [user_id]
+  );
+
+    res.json({
+    acceptedRequests: Array.isArray(acceptedRequests) ? acceptedRequests : [],
+    canceledRequests: Array.isArray(canceledRequests) ? canceledRequests : [],
+    pendingRequests: Array.isArray(pendingRequests) ? pendingRequests : []
+  });
+})
+
+
+
+
+router.post("/", async(req,res)=>{
+  const { user_id } = req.session.user;
+  const { property_id, start_date, end_date, guests } = req.body;
+
+  const startDate = new Date(start_date);
+  const endDate = new Date(end_date);
+
+  const [booking] = await pool.query(
+    `INSERT INTO bookings  (traveler_id, property_id, start_date, end_date, guests, status) values (?,?,?,?,?,?)`,
+    [user_id, property_id, startDate, endDate, guests, 'PENDING']
+  );  
+  res.json(booking)
+})
+
 
 // GET /api/bookings/incoming - bookings for properties owned by the owner
 router.get("/incoming", requireOwner, async (req, res) => {
@@ -82,5 +141,25 @@ router.patch("/:id/cancel", requireOwner, async (req, res) => {
   await pool.query("UPDATE bookings SET status = 'CANCELLED' WHERE booking_id = ?", [id]);
   res.json({ message: "Booking cancelled" });
 });
+
+
+router.get("/bookedDates/:id", async(req,res)=>{
+  const { id } = req.params;
+  
+  const [rows] = await pool.query("SELECT start_date, end_date FROM bookings WHERE property_id = ?", [id]);
+  
+  if (rows.length === 0) return res.status(404).json({ error: "booking not found" });
+
+  const intervals = rows.map( (d) => {
+    return{ 
+    start: d.start_date ,
+    end: `${d.end_date.toISOString().split('T')[0]}T23:59:59.999Z`
+}}
+)
+
+res.json(intervals);
+
+});
+
 
 export default router;
