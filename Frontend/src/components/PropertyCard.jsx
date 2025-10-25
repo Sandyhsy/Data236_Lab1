@@ -15,20 +15,8 @@ export default function PropertyCard({ p, onEdit, onDelete }) {
         </div>
         {p.description && <p className="text-secondary small mb-3">{p.description}</p>}
         <div className="mt-auto d-flex gap-2">
-          {(onEdit || onDelete) && (
-            <div className="mt-auto d-flex gap-2">
-              {onEdit && (
-                <button className="btn btn-outline-secondary" onClick={() => onEdit(p)}>
-                  Edit
-                </button>
-              )}
-              {onDelete && (
-                <button className="btn btn-danger" onClick={() => onDelete(p)}>
-                  Delete
-                </button>
-              )}
-            </div>
-          )}
+          <button className="btn btn-outline-secondary" onClick={() => onEdit(p)}>Edit</button>
+          <button className="btn btn-danger" onClick={() => onDelete(p)}>Delete</button>
         </div>
       </div>
     </div>
