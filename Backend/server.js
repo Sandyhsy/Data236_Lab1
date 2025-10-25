@@ -33,27 +33,16 @@ app.use(session({
   }
 }));
 
-// app.use((req, _res, next) => { console.log(req.method, req.originalUrl); next(); });
-// debug logging
-// app.use((req, res, next) => {
-//   const start = Date.now();
-//   res.on("finish", () => {
-//     console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} ${Date.now()-start}ms`);
-//   });
-//   next();
-// });
-// debug logging
-
 app.use("/api/auth", authRoutes);
 app.use("/api/owner", ownerRoutes);
 app.use("/api/properties", propertyRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/properties", propertyImageRoutes);
+app.use("/api/search", searchRoutes);
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
-app.use("/api",profileRoutes)
-app.use("/api/search", searchRoutes)
-app.use("/api/favorites", favoriteRoutes)
+app.use("/api",profileRoutes);
+app.use("/api/favorites", favoriteRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
