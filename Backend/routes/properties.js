@@ -28,10 +28,29 @@ router.post("/", requireOwner, async (req, res) => {
   res.status(201).json(rows[0]);
 });
 
-// GET /api/properties/mine - list my properties
+// GET /api/properties/mine - list my properties (include first image only)
 router.get("/mine", requireOwner, async (req, res) => {
   const { user_id } = req.session.user;
-  const [rows] = await pool.query("SELECT * FROM properties WHERE owner_id = ? ORDER BY created_at DESC", [user_id]);
+
+  // select each property plus its first image url (ordered by image_id)
+  const [rows] = await pool.query(
+    `
+    SELECT
+      p.*,
+      (
+        SELECT i.url
+        FROM property_images i
+        WHERE i.property_id = p.property_id
+        ORDER BY i.image_id ASC
+        LIMIT 1
+      ) AS first_image_url
+    FROM properties p
+    WHERE p.owner_id = ?
+    ORDER BY p.created_at DESC
+    `,
+    [user_id]
+  );
+
   res.json(rows);
 });
 
