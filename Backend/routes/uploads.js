@@ -4,6 +4,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import { requireOwner } from "../middleware/requireOwner.js";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 dotenv.config();
 
@@ -149,7 +150,7 @@ router.post("/s3-delete", requireOwner, async (req, res) => {
 });
 
 // POST /api/uploads/s3-presign-profile
-router.post("/s3-presign-profile", requireOwner, async (req, res) => {
+router.post("/s3-presign-profile", requireAuth, async (req, res) => {
   const { filename, contentType } = req.body;
   if (!filename || !contentType) return res.status(400).json({ error: "Missing fields" });
   if (!contentType.startsWith("image/")) return res.status(400).json({ error: "Only images allowed" });
@@ -164,6 +165,8 @@ router.post("/s3-presign-profile", requireOwner, async (req, res) => {
     CacheControl: "public, max-age=31536000, immutable"
   });
 
+  // Safety: session must exist
+  if (!req.session?.user?.user_id) return res.status(401).json({ error: "Not authenticated" });
   const uploadUrl = await getSignedUrl(s3, cmd, { expiresIn: 60 });
   const publicUrl = `${process.env.S3_PUBLIC_BASE}/${encodeURIComponent(key)}`;
 
