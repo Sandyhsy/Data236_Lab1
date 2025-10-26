@@ -117,12 +117,49 @@ router.get("/:id/images", requireOwner, async (req, res) => {
   res.json(rows);
 });
 
-router.get("/:id", async (req,res) => {
+
+// GET /api/properties/:id - include first image and all photos
+router.get("/:id", async (req, res) => {
   const { id } = req.params;
-  const [rows] = await pool.query("SELECT * FROM properties WHERE property_id = ?", [id]);
-  if (rows.length === 0) return res.status(404).json({ error: "Property not found" });
-  res.json(rows[0]);
+
+  try {
+    // first_image_url + all images via GROUP_CONCAT
+    const [rows] = await pool.query(
+      `
+      SELECT
+        p.*,
+        (
+          SELECT i.url
+          FROM property_images i
+          WHERE i.property_id = p.property_id
+          ORDER BY i.image_id ASC
+          LIMIT 1
+        ) AS first_image_url,
+        (
+          SELECT GROUP_CONCAT(ii.url ORDER BY ii.image_id ASC SEPARATOR '||')
+          FROM property_images ii
+          WHERE ii.property_id = p.property_id
+        ) AS photos_csv
+      FROM properties p
+      WHERE p.property_id = ?
+      `,
+      [id]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ error: "Property not found" });
+
+    // normalize photos_csv to an array
+    const row = rows[0];
+    const photos = row.photos_csv ? row.photos_csv.split("||") : [];
+    delete row.photos_csv;
+
+    res.json({ ...row, photos });
+  } catch (err) {
+    console.error("[GET /api/properties/:id] error:", err);
+    res.status(500).json({ error: "Failed to load property" });
+  }
 });
+
 
 // PUT /api/properties/:id/images - replace images for my property
 router.put("/:id/images", requireOwner, async (req, res) => {
