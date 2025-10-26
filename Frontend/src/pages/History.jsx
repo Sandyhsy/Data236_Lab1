@@ -15,8 +15,6 @@ export default function OwnerDashboard() {
 
         try {
           const d = await api.getbookingStatus();
-              console.log(" history:", d);
-
           setPendingRequests(Array.isArray(d?.pendingRequests) ? d.pendingRequests : [])
           setAcceptedRequests(Array.isArray(d?.acceptedRequests) ? d.acceptedRequests : [])
           setCanceledRequests(Array.isArray(d?.canceledRequests) ? d.canceledRequests : [])

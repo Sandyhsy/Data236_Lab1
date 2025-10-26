@@ -155,10 +155,7 @@ export default function Profile() {
                       value={form.about_me}
                       onChange={e=>setForm({...form, about_me:e.target.value})}
                     />
-                  </div>
-
-                      {/* Country (stores 'US', 'CA', ...) and shows 'US', 'CA', ... */}
-                      
+                  </div>                      
                   <div className="col-md-6">
                     <label className="form-label">Country</label>
                       <CountryDropdown
@@ -174,8 +171,8 @@ export default function Profile() {
                         value={form.city}
                         onChange={(val) => setForm(prev => ({ ...prev, city: val }))}
                         className="form-select"
-                        valueType="short"         // store "CA", "NY", ...
-                        labelType="short"         // show "CA", "NY", ...
+                        valueType="short"         
+                        labelType="short"         
                         disableWhenEmpty
                       />
                   </div>

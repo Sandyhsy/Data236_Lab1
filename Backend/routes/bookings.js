@@ -148,7 +148,9 @@ router.get("/bookedDates/:id", async(req,res)=>{
   
   const [rows] = await pool.query("SELECT start_date, end_date FROM bookings WHERE property_id = ?", [id]);
   
-  if (rows.length === 0) return res.status(404).json({ error: "booking not found" });
+  if (rows.length === 0) {
+    return res.json([]);
+  }
 
   const intervals = rows.map( (d) => {
     return{ 
