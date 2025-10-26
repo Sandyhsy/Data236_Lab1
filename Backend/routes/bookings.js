@@ -4,55 +4,92 @@ import { requireOwner } from "../middleware/requireOwner.js";
 
 const router = Router();
 
-router.get("/", async(req,res)=>{
+router.get("/", async (req, res) => {
   const { user_id } = req.session.user;
-  const [bookings] = await pool.query(
-    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
-            p.name AS property_name
-     FROM bookings b
+  const [bookHistory] = await pool.query(
+    `
+    SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
+    p.name AS property_name, 
+    (
+      SELECT i.url
+      FROM property_images i
+      WHERE i.property_id = p.property_id
+      ORDER BY i.image_id ASC
+      LIMIT 1
+    ) AS first_image_url
+    FROM bookings b
     JOIN properties p ON b.property_id = p.property_id
-     where b.traveler_id = ? and  b.status IN ('ACCEPTED') and end_date < NOW()
-     ORDER BY b.created_at DESC`,
+    WHERE b.traveler_id = ? AND b.status = 'ACCEPTED' AND DATE(end_date) < CURDATE()
+    ORDER BY b.created_at DESC;
+    `,
     [user_id]
-  );  
-  console.log("bookings fetched:", bookings);
-  res.json(bookings)
+  );
+  console.log("bookings fetched:", bookHistory);
+  res.json(bookHistory)
 })
 
-router.get("/status", async(req,res)=>{
+router.get("/status", async (req, res) => {
   const { user_id } = req.session.user;
+
   const [acceptedRequests] = await pool.query(
-    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
-            p.name AS property_name
-     FROM bookings b
-     JOIN properties p ON b.property_id = p.property_id
-     WHERE b.traveler_id = ? and b.status = 'ACCEPTED' and b.start_date >= NOW()
-     ORDER BY b.created_at DESC`,
+    `
+    SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
+    p.name AS property_name, 
+    (
+      SELECT i.url
+      FROM property_images i
+      WHERE i.property_id = p.property_id
+      ORDER BY i.image_id ASC
+      LIMIT 1
+    ) AS first_image_url
+    FROM bookings b
+    JOIN properties p ON b.property_id = p.property_id
+    WHERE b.traveler_id = ? and b.status = 'ACCEPTED' and DATE(start_date) >= CURDATE()
+    ORDER BY b.created_at DESC;
+    `,
     [user_id]
   );
 
   const [canceledRequests] = await pool.query(
-    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
-            p.name AS property_name
-     FROM bookings b
-     JOIN properties p ON b.property_id = p.property_id
-     WHERE b.traveler_id = ? and b.status = 'CANCELLED' 
-     ORDER BY b.created_at DESC`,
+    `
+    SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
+    p.name AS property_name, 
+    (
+      SELECT i.url
+      FROM property_images i
+      WHERE i.property_id = p.property_id
+      ORDER BY i.image_id ASC
+      LIMIT 1
+    ) AS first_image_url
+    FROM bookings b
+    JOIN properties p ON b.property_id = p.property_id
+    WHERE b.traveler_id = ? and b.status = 'CANCELLED'
+    ORDER BY b.created_at DESC;
+    `,
     [user_id]
   );
 
 
   const [pendingRequests] = await pool.query(
-    `SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
-            p.name AS property_name
-     FROM bookings b
-     JOIN properties p ON b.property_id = p.property_id
-     WHERE b.traveler_id = ? and b.status = 'PENDING' 
-     ORDER BY b.created_at DESC`,
+    `
+    SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
+    p.name AS property_name, 
+    (
+      SELECT i.url
+      FROM property_images i
+      WHERE i.property_id = p.property_id
+      ORDER BY i.image_id ASC
+      LIMIT 1
+    ) AS first_image_url
+    FROM bookings b
+    JOIN properties p ON b.property_id = p.property_id
+    WHERE b.traveler_id = ? and b.status = 'PENDING'
+    ORDER BY b.created_at DESC;
+    `,
     [user_id]
   );
 
-    res.json({
+  res.json({
     acceptedRequests: Array.isArray(acceptedRequests) ? acceptedRequests : [],
     canceledRequests: Array.isArray(canceledRequests) ? canceledRequests : [],
     pendingRequests: Array.isArray(pendingRequests) ? pendingRequests : []
@@ -62,7 +99,7 @@ router.get("/status", async(req,res)=>{
 
 
 
-router.post("/", async(req,res)=>{
+router.post("/", async (req, res) => {
   const { user_id } = req.session.user;
   const { property_id, start_date, end_date, guests } = req.body;
 
@@ -72,7 +109,7 @@ router.post("/", async(req,res)=>{
   const [booking] = await pool.query(
     `INSERT INTO bookings  (traveler_id, property_id, start_date, end_date, guests, status) values (?,?,?,?,?,?)`,
     [user_id, property_id, startDate, endDate, guests, 'PENDING']
-  );  
+  );
   res.json(booking)
 })
 
@@ -143,23 +180,23 @@ router.patch("/:id/cancel", requireOwner, async (req, res) => {
 });
 
 
-router.get("/bookedDates/:id", async(req,res)=>{
+router.get("/bookedDates/:id", async (req, res) => {
   const { id } = req.params;
-  
+
   const [rows] = await pool.query("SELECT start_date, end_date FROM bookings WHERE property_id = ?", [id]);
-  
+
   if (rows.length === 0) {
     return res.json([]);
   }
+  const intervals = rows.map((d) => {
+    return {
+      start: d.start_date,
+      end: `${d.end_date.toISOString().split('T')[0]}T23:59:59.999Z`
+    }
+  }
+  )
 
-  const intervals = rows.map( (d) => {
-    return{ 
-    start: d.start_date ,
-    end: `${d.end_date.toISOString().split('T')[0]}T23:59:59.999Z`
-}}
-)
-
-res.json(intervals);
+  res.json(intervals);
 
 });
 
