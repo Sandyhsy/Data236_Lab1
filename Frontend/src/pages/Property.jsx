@@ -2,15 +2,53 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api";
 import DatePicker from "react-datepicker";
-
 import "react-datepicker/dist/react-datepicker.css";
 
+// Display a carousel of images with next/prev buttons
+function PropertyCarousel({ photos, height = 320, radius = 8 }) {
+  const list = (Array.isArray(photos) ? photos : [])
+    .map((u) => {
+      try { return decodeURIComponent(u); } catch { return u; }
+    });
 
+  const [idx, setIdx] = React.useState(0);
 
+  if (!list.length) {
+    return (
+      <div
+        className="bg-light d-flex align-items-center justify-content-center"
+        style={{ height, borderRadius: radius }}
+      >
+        <span className="text-muted small">No image</span>
+      </div>
+    );
+  }
 
+  const wrap = (n) => (n + list.length) % list.length;
+
+  return (
+    <div style={{ position: "relative" }}>
+      <div style={{ height, overflow: "hidden", borderRadius: radius }}>
+        <img src={list[idx]} alt="property" className="w-100 h-100" style={{ objectFit: "cover", display: "block" }} onError={(e) => { e.currentTarget.src = "https://placehold.co/800x320?text=No+Image"; }} />
+      </div>
+
+      {list.length > 1 && (
+        <>
+          <button type="button" className="btn btn-light btn-sm" aria-label="Previous image" onClick={() => setIdx((i) => wrap(i - 1))} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", borderRadius: 999 }} >
+            ‹
+          </button>
+          <button type="button" className="btn btn-light btn-sm" aria-label="Next image" onClick={() => setIdx((i) => wrap(i + 1))} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", borderRadius: 999 }} >
+            ›
+          </button>
+          <span className="badge bg-dark" style={{ position: "absolute", right: 8, bottom: 8 }}> {idx + 1}/{list.length}</span>
+        </>
+      )}
+    </div>
+  );
+}
 
 export default function Property() {
-    const {id} = useParams();
+  const { id } = useParams();
   const [property, setProperty] = useState({
     name: "",
     type: "",
@@ -18,7 +56,9 @@ export default function Property() {
     pricing: "",
     bedrooms: "",
     bathrooms: "",
-    profile_picture: ""
+    profile_picture: "",
+    first_image_url: "",
+    photos: []
   });
   const [guestCount, setGuestCount] = useState(1);
   const [startDate, setStartDate] = useState(new Date());
@@ -28,27 +68,30 @@ export default function Property() {
   useEffect(() => {
     async function init() {
       const p = await api.getProperty(id);
-      const d = await api.getBookedDates(id);
+      // const d = await api.getBookedDates(id);
       setProperty({
         name: p.name || "",
-        profile_picture: p.profile_picture || "",
+        type: p.type || "",
+        amenities: p.amenities || "",
         pricing: p.price_per_night || "",
-        bedrooms: p.bedrooms || "",
-        bathrooms: p.bathrooms || "",
-        amenities: p.amenities || ""
+        bedrooms: p.bedrooms ?? "",
+        bathrooms: p.bathrooms ?? "",
+        profile_picture: p.profile_picture || "",
+        first_image_url: p.first_image_url || "",
+        photos: Array.isArray(p.photos) ? p.photos : []
       });
-      setExcludeDates(Array.isArray(d) ? d : []);
+      // setExcludeDates(Array.isArray(d) ? d : []);
     }
     init();
   }, [id]);
 
-    async function clickFavorite() {
+  async function clickFavorite() {
     const pid = Number(id)
     const u = await api.TravelerMe();
     const uid = Number(u.user_id)
     try {
-        const resp = await api.addFavorite(pid,uid);
-        alert(resp.message)
+      const resp = await api.addFavorite(pid, uid);
+      alert(resp.message)
     } catch (e) {
       console.error("Favorite toggle failed", e);
     }
@@ -71,9 +114,9 @@ export default function Property() {
       return;
     }
 
-    if(guestCount < 1) {
+    if (guestCount < 1) {
       alert("At least one guest is required");
-      return; 
+      return;
     }
 
     try {
@@ -93,95 +136,97 @@ export default function Property() {
       {/* Full-width image */}
       <div className="mb-4">
         <div className="w-100 overflow-hidden rounded" style={{ maxHeight: "500px" }}>
-          <img
-            src={property.profile_picture || "https://placehold.co/800x300?text=Profile"}
-            alt="profile"
-            className="w-100"
-            style={{ objectFit: "cover" }}
+          <PropertyCarousel
+            photos={
+              Array.isArray(property?.photos) && property.photos.length > 0
+                ? property.photos
+                : (property?.first_image_url ? [property.first_image_url] : [])
+            }
+            height={320}
           />
         </div>
       </div>
-                <div className="card">
+      <div className="card">
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div className="d-flex align-items-center gap-3">
+              <h3 className="m-0 fw-semibold">{property.name}</h3>
+              <button
+                type="button"
+                onClick={clickFavorite}
+                className={`btn fs-1`}>
+                {'\u2764'}
+              </button>
+            </div>
+            <h3 className="m-0 fw-semibold"><span className="badge text-bg-danger">${property.pricing}/night</span></h3>
+          </div>
+
+          <div className="d-flex align-items-center gap-3 mb-4">
+            <div className="d-inline-flex align-items-center">
+              <span className="me-2 fw-semibold">Bedrooms:{property.bedrooms} </span>
+            </div>
+            <div className="d-inline-flex align-items-center">
+              <span className="me-2 fw-semibold">Bathrooms:{property.bathrooms}</span>
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <span
+              className="border rounded px-2 py-1"
+              style={{ display: "inline-block", width: "auto" }}
+            >
+              amenities: {property.amenities}
+            </span>
+          </div>
+          <div className="card mt-3">
             <div className="card-body">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <div className="d-flex align-items-center gap-3">
-        <h3 className="m-0 fw-semibold">{property.name}</h3>
-       <button
-          type="button"
-          onClick={clickFavorite}
-         className={`btn fs-1`}>
-        {'\u2764'}
-        </button>
-        </div>
-        <h3 className="m-0 fw-semibold"><span className="badge text-bg-danger">${property.pricing}/night</span></h3>
-      </div>
-
-      <div className="d-flex align-items-center gap-3 mb-4">
-        <div className="d-inline-flex align-items-center">
-          <span className="me-2 fw-semibold">Bedrooms:{property.bedrooms} </span>
-        </div>
-        <div className="d-inline-flex align-items-center">
-          <span className="me-2 fw-semibold">Bathrooms:{property.bathrooms}</span>
-        </div>
-      </div>
-
-      <div className="mb-3">
-        <span
-          className="border rounded px-2 py-1"
-          style={{ display: "inline-block", width: "auto" }}
-        >
-          amenities: {property.amenities}
-        </span>
-      </div>
-<div className="card mt-3">
-  <div className="card-body">
-    <h6 className="mb-3">Select your dates</h6>
-    <div className="row g-2">
-            <div className="col-12 col-md-6">
-              <label className="form-label">Check-in:</label>
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => setStartDate(date)}
-                excludeDateIntervals={excludeDates}
-                placeholderText="Choose a check-in date"
-                className="form-control"
-              />
-            </div>
-            <div className="col-12 col-md-6">
-              <label className="form-label">Check-out:</label>
-              <DatePicker
-                selected={endDate}
-                onChange={(date) => setEndDate(date)}
-                excludeDateIntervals={excludeDates}
-                placeholderText="Choose a check-out date"
-                className="form-control"
-              />
-            </div>
-            <div className="col-12 col-md-6">
-              <label className="form-label">Guests:</label>
-              <input
-                type="number"
-                min={1}
-                value={guestCount}
-                onChange={(i) => setGuestCount(Number(i.target.value))}
-                className="form-control"
-              />
-            </div>
-                        <div className="col-12 col-md-6">
-                <button className="btn btn-success mt-4"
-                onClick={handleSubmitBooking}
-                disabled={!startDate || !endDate}
-                title={!startDate ? "Pick check-in first" : (!endDate ? "Pick check-out" : "Submit")}
-              > reserve</button>
+              <h6 className="mb-3">Select your dates</h6>
+              <div className="row g-2">
+                <div className="col-12 col-md-6">
+                  <label className="form-label">Check-in:</label>
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date) => setStartDate(date)}
+                    excludeDateIntervals={excludeDates}
+                    placeholderText="Choose a check-in date"
+                    className="form-control"
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <label className="form-label">Check-out:</label>
+                  <DatePicker
+                    selected={endDate}
+                    onChange={(date) => setEndDate(date)}
+                    excludeDateIntervals={excludeDates}
+                    placeholderText="Choose a check-out date"
+                    className="form-control"
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <label className="form-label">Guests:</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={guestCount}
+                    onChange={(i) => setGuestCount(Number(i.target.value))}
+                    className="form-control"
+                  />
+                </div>
+                <div className="col-12 col-md-6">
+                  <button className="btn btn-success mt-4"
+                    onClick={handleSubmitBooking}
+                    disabled={!startDate || !endDate}
+                    title={!startDate ? "Pick check-in first" : (!endDate ? "Pick check-out" : "Submit")}
+                  > reserve</button>
+                </div>
               </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
-  </div>
-</div>
-
-</div>
-</div>
-    </div>
-    
   );
 }
