@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { api } from "../api";
-import PropertyCard from "../components/PropertyCard";
+import PropertyCardSearch from "../components/PropertyCardSearch";
 
 export default function FavoriteList() {
   const [items, setItems] = useState([]);
@@ -15,7 +15,7 @@ export default function FavoriteList() {
       <div className="row g-3">
         {items.map(p => (
           <div className="col-12 col-md-6 col-lg-4" key={p.property_id}>
-            <PropertyCard p={p} />
+            <PropertyCardSearch p={p} />
           </div>
         ))}
       </div>
