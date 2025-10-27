@@ -110,7 +110,7 @@ CREATE TABLE `properties` (
 
 LOCK TABLES `properties` WRITE;
 /*!40000 ALTER TABLE `properties` DISABLE KEYS */;
-INSERT INTO `properties` VALUES (8,1,'Mission Family House','House','Cozy and quiet neighborhood, walking distance to Safeway and a lovely park.','San Jose, USA','WiFi, Heating, Kitchen, Parking, Backyard, Dishwasher',320.00,3,2,'2025-10-20','2025-12-20','2025-10-15 20:23:25'),(10,2,'Montmartre Artist Studio','Studio','Small but comfy and with nice view','Paris, France','WiFi, Heating, Coffee Maker, Microwave',95.00,NULL,1,'2025-10-25','2025-12-18','2025-10-15 22:34:21');
+INSERT INTO `properties` VALUES (1,1,'Mission Family House','House','Cozy and quiet neighborhood, walking distance to Safeway and a lovely park.','San Jose, USA','WiFi, Heating, Kitchen, Parking, Backyard, Dishwasher',320.00,3,2,'2025-10-20','2025-12-20','2025-10-15 20:23:25'),(2,2,'Montmartre Artist Studio','Studio','Small but comfy and with nice view','Paris, France','WiFi, Heating, Coffee Maker, Microwave',75.00,NULL,1,'2025-10-20','2025-12-20','2025-10-15 22:34:21');
 /*!40000 ALTER TABLE `properties` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -129,7 +129,7 @@ CREATE TABLE `property_images` (
   PRIMARY KEY (`image_id`),
   KEY `property_id` (`property_id`),
   CONSTRAINT `property_images_ibfk_1` FOREIGN KEY (`property_id`) REFERENCES `properties` (`property_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -138,7 +138,7 @@ CREATE TABLE `property_images` (
 
 LOCK TABLES `property_images` WRITE;
 /*!40000 ALTER TABLE `property_images` DISABLE KEYS */;
-INSERT INTO `property_images` VALUES (8,8,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F8%2Fafb67ce7-c653-45ff-a6f2-20d634a646f8.png','2025-10-15 20:32:58'),(9,8,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F8%2Fec2e0413-3564-418e-bb18-b1cabb0a1a05.png','2025-10-15 20:32:58'),(10,8,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F8%2F57eaa561-7f9c-4558-8f78-8f621065c769.png','2025-10-15 20:32:58'),(11,10,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F10%2Fd3bf5296-5926-4ccb-af4c-b9dbe33357d5.png','2025-10-15 22:34:22'),(12,10,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F10%2F86423da8-74ff-4e90-9b53-e5785a3d91d6.png','2025-10-15 22:34:22'),(13,10,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F10%2Fdf242bef-6e86-41c8-89a7-15e34b0f9488.png','2025-10-15 22:34:22');
+INSERT INTO `property_images` VALUES (1,1,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F8%2Fafb67ce7-c653-45ff-a6f2-20d634a646f8.png','2025-10-15 20:32:58'),(2,1,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F8%2Fec2e0413-3564-418e-bb18-b1cabb0a1a05.png','2025-10-15 20:32:58'),(3,1,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F8%2F57eaa561-7f9c-4558-8f78-8f621065c769.png','2025-10-15 20:32:58'),(14,2,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F10%2Fd3bf5296-5926-4ccb-af4c-b9dbe33357d5.png','2025-10-15 23:01:23'),(15,2,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F10%2F86423da8-74ff-4e90-9b53-e5785a3d91d6.png','2025-10-15 23:01:23'),(16,2,'https://lab1-host-images.s3.us-east-2.amazonaws.com/properties%2F10%2Fdf242bef-6e86-41c8-89a7-15e34b0f9488.png','2025-10-15 23:01:23');
 /*!40000 ALTER TABLE `property_images` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -165,7 +165,7 @@ CREATE TABLE `users` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -174,7 +174,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'owner','Shao-Yu Huang','shao-yu.huang@sjsu.edu','$2b$10$Xw5YsWv30C6X.kxtHd1GguWu57Wj37XAAb2nej689JiUdR.4Ep6du','6693336161','Hello','San Jose','USA','English','Female','https://lab1-host-images.s3.us-east-2.amazonaws.com/profiles%2F1%2F93543d4d-4876-4eb0-9206-0d1a0bb0aabf.jpg','2025-10-15 15:59:37'),(2,'owner','Alice','alice@example.com','$2b$10$GA.7SU6Zupb362i3b8RWUetwRMsP67fqa8wirCu3qc9r32A80olG.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-10-15 22:08:32');
+INSERT INTO `users` VALUES (1,'owner','Shao-Yu Huang','shao-yu.huang@sjsu.edu','$2b$10$Xw5YsWv30C6X.kxtHd1GguWu57Wj37XAAb2nej689JiUdR.4Ep6du','6693336161','Hello','CA','United States','English','Female','https://lab1-host-images.s3.us-east-2.amazonaws.com/profiles%2F1%2Fbd1ff6a0-cb5f-427f-a530-51e97a523409.png','2025-10-15 15:59:37'),(2,'owner','Alice','alice@example.com','$2b$10$GA.7SU6Zupb362i3b8RWUetwRMsP67fqa8wirCu3qc9r32A80olG.',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-10-15 22:08:32'),(3,'traveler','Taylor Swift','taylor.swift@sjsu.edu','$2b$10$hMlF9U2wzGZidaTbm2d/.etOMIyUnqrBzTVfqH7cmd7tUOJ09OXSi',NULL,NULL,NULL,NULL,NULL,NULL,'https://lab1-host-images.s3.us-east-2.amazonaws.com/profiles%2F3%2Fd8d0fc3f-f81b-41b1-9eeb-9878f146ef61.png','2025-10-23 21:31:17'),(4,'traveler','Simon Shim','simon.shim@sjsu.edu','$2b$10$bqe.4Ch8VYas.3JCxCueiO7mICW8HgcTUXoLDbOxS3cUDrJFvZ6lm',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'2025-10-23 22:55:06');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -187,4 +187,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-15 15:46:01
+-- Dump completed on 2025-10-25 16:43:55

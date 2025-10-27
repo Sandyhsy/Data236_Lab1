@@ -3,13 +3,6 @@ import { pool } from "../db.js";
 
 const router = Router();
 
-router.get("/", async (req, res) => {
-  const { user_id } = req.session.user;
-  const [rows] = await pool.query("SELECT * FROM properties ORDER BY created_at DESC");
-  res.json(rows);
-});
-
-
 router.post("/properties", async (req, res) => {
   const { location, start, end, guests } = req.body || {};
   const loc = location ? location.trim() : '';
@@ -20,5 +13,33 @@ router.post("/properties", async (req, res) => {
   );
   res.json(rows);
 });
+
+
+// GET /api/properties - public list for search (includes first image only)
+router.get("/", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT
+        p.*,
+        (
+          SELECT i.url
+          FROM property_images i
+          WHERE i.property_id = p.property_id
+          ORDER BY i.image_id ASC
+          LIMIT 1
+        ) AS first_image_url
+      FROM properties p
+      ORDER BY p.created_at DESC
+      `
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("[GET /api/properties] error:", err);
+    res.status(500).json({ error: "Failed to load properties" });
+  }
+});
+
+
 
 export default router;

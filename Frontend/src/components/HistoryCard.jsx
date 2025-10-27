@@ -1,12 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-
 export default function HistoryCard({ b }) {
   const nav = useNavigate();
-
-  if (!b) {return null;}
-  console.log("HistoryCard booking:", b);
+  if (!b) return null;
 
   return (
     <div className="card">
@@ -20,7 +17,9 @@ export default function HistoryCard({ b }) {
           <div className="fw-bold">{b.property_name}</div>
           <div className="d-flex flex-wrap gap-2 mt-2">
             <span className="badge text-bg-light">#{b.booking_id}</span>
-            <span className="badge text-bg-light">  {new Date(b.start_date).toISOString().split('T')[0]} - {new Date(b.end_date).toISOString().split('T')[0]}</span>
+            <span className="badge text-bg-light">
+              {new Date(b.start_date).toISOString().split("T")[0]} - {new Date(b.end_date).toISOString().split("T")[0]}
+            </span>
             {b.guests != null && <span className="badge text-bg-light">{b.guests} guests</span>}
           </div>
         </div>

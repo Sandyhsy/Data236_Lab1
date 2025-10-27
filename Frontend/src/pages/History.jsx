@@ -32,7 +32,6 @@ export default function OwnerDashboard() {
   	setAcceptedRequests(accepted);
     setCanceledRequests(canceled);
   };
-
   useEffect(() => { load(); }, []);
 
 

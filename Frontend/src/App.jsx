@@ -118,7 +118,7 @@ export default function App() {
   // const isOwner
   return (
     <>
-      <Header user={user} onLogout={async () => { await api.logout(); setUser(null); }} />
+      <Header user={user} onLogout={async () => { await api.logout(); setUser(null); window.location.replace("/"); }} />
       <div>
         <Routes> 
           <Route path="/" element={isAuthed ?<Profile />: <Start />} />

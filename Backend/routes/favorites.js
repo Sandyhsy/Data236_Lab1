@@ -5,18 +5,21 @@ const router = Router();
 
 router.get("/", async (req, res) => {
   const { user_id } = req.session.user;
-  const [rows] = await pool.query(`SELECT 
-    p.property_id,
-    p.name,
-    p.location,
-    p.price_per_night,
-    p.bedrooms,
-    p.bathrooms,
-    p.amenities,
-    p.description
-FROM favorites f
-LEFT JOIN properties p ON p.property_id = f.property_id
-WHERE f.traveler_id =?`, [user_id]);
+  const [rows] = await pool.query(`
+  SELECT p.property_id, p.name, p.location, p.price_per_night, p.bedrooms, p.bathrooms, p.amenities, p.description,
+  (
+    SELECT i.url
+    FROM property_images i
+    WHERE i.property_id = p.property_id
+    ORDER BY i.image_id ASC
+    LIMIT 1
+  ) AS first_image_url
+  FROM favorites f
+  LEFT JOIN properties p ON p.property_id = f.property_id
+  WHERE f.traveler_id = ?
+  ORDER BY f.created_at DESC; 
+    `, 
+  [user_id]);
   res.json(rows);
 });
 
