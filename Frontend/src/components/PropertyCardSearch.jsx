@@ -5,12 +5,8 @@ export default function PropertyCardSearch({ p, onEdit, onDelete }) {
   const nav = useNavigate();
 
   return (
-    <div className="card h-100"
-    style={{ cursor: "pointer" }}
-    onClick={() => nav(`/property/${p.property_id}`)}
-    >
-      {/* {p.first_image_url && <img className="img-cover" src={p.first_image_url} alt={p.name} />} */}
-  <img className="img-cover" src="https://placehold.co/360x200?text=Property" alt={p.name || "Property image"} />
+    <div className="card h-100" style={{ cursor: "pointer" }} onClick={() => nav(`/property/${p.property_id}`)}>
+      <img src={p.first_image_url || "https://placehold.co/360x200?text=Property"} alt={p.name} />
       <div className="card-body d-flex flex-column">
         <h5 className="card-title fw-bold">{p.name}</h5>
         <div className="mb-2 d-flex flex-wrap gap-2">
