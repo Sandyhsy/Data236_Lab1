@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
@@ -119,22 +120,53 @@ def weather_lookup_tool(lat: Optional[float] = None, lon: Optional[float] = None
   if query_lat is None or query_lon is None:
     return "Latitude and longitude (or a recognizable location name) are required."
 
-  async def _fetch():
+  async def _fetch_openweather():
     return await get_weather_daily(query_lat, query_lon)
 
-  result = _run_async(_fetch())
-  # Extract useful summary
-  daily = result.get("daily", [])
-  summary = []
-  for day in daily[:5]:
-    dt = datetime.fromtimestamp(day.get("dt")).date() if day.get("dt") else None
-    summary.append({
-      "date": dt.isoformat() if dt else None,
-      "temp_min": day.get("temp", {}).get("min"),
-      "temp_max": day.get("temp", {}).get("max"),
-      "description": day.get("weather", [{}])[0].get("description")
-    })
-  return _serialize_rows(summary)
+  async def _fetch_openmeteo():
+    base = "https://api.open-meteo.com/v1/forecast"
+    params = {
+      "latitude": query_lat,
+      "longitude": query_lon,
+      "daily": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode",
+      "timezone": "auto"
+    }
+    async with httpx.AsyncClient(timeout=15.0) as client:
+      resp = await client.get(base, params=params)
+      resp.raise_for_status()
+      return resp.json()
+
+  try:
+    result = _run_async(_fetch_openweather())
+    daily = result.get("daily", [])
+    summary = []
+    for day in daily[:5]:
+      dt = datetime.fromtimestamp(day.get("dt")).date() if day.get("dt") else None
+      summary.append({
+        "date": dt.isoformat() if dt else None,
+        "temp_min": day.get("temp", {}).get("min"),
+        "temp_max": day.get("temp", {}).get("max"),
+        "description": day.get("weather", [{}])[0].get("description")
+      })
+    return _serialize_rows(summary)
+  except Exception as exc_open:
+    try:
+      result = _run_async(_fetch_openmeteo())
+      daily = result.get("daily", {})
+      times = daily.get("time", [])
+      max_t = daily.get("temperature_2m_max", [])
+      min_t = daily.get("temperature_2m_min", [])
+      summary = []
+      for idx, date_str in enumerate(times[:5]):
+        summary.append({
+          "date": date_str,
+          "temp_min": min_t[idx] if idx < len(min_t) else None,
+          "temp_max": max_t[idx] if idx < len(max_t) else None,
+          "description": None
+        })
+      return _serialize_rows(summary)
+    except Exception as exc_meta:
+      return f"Weather lookup failed: {exc_open}; fallback also failed: {exc_meta}"
 
 
 def generate_itinerary_tool(
