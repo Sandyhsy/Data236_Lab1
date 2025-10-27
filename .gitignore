@@ -8,6 +8,7 @@ build/
 .next/
 .nuxt/
 coverage/
+package-lock.json
 
 # env & logs
 .env
@@ -23,3 +24,6 @@ Thumbs.db
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+Backend/.env
+__pycache__/
