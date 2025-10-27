@@ -13,7 +13,8 @@ except ImportError:  # pragma: no cover - dependency optional at runtime
     genai = None
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = "gemini-2.5-flash"
+# Use Gemini 2f Flash model for concise, fast responses. Change if you want a different variant.
+MODEL_NAME = "gemini-2f-flash"
 
 _model = None
 _model_error: Optional[Exception] = None

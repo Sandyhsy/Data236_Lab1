@@ -10,7 +10,7 @@ export default function PropertyCardSearch({ p, onEdit, onDelete }) {
     onClick={() => nav(`/property/${p.property_id}`)}
     >
       {/* {p.first_image_url && <img className="img-cover" src={p.first_image_url} alt={p.name} />} */}
-      <img className="img-cover" src="https://placehold.co/360x200?text=Property" />
+  <img className="img-cover" src="https://placehold.co/360x200?text=Property" alt={p.name || "Property image"} />
       <div className="card-body d-flex flex-column">
         <h5 className="card-title fw-bold">{p.name}</h5>
         <div className="mb-2 d-flex flex-wrap gap-2">

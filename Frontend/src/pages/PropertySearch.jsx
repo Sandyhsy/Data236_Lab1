@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import PropertyCardSearch from "../components/PropertyCardSearch";
 
 export default function PropertySearch() {
   const [searchInput, setSearchInput] = useState({ location: "", start: "", end: "", guests: 1 });
   const [items, setItems] = useState([]);
-  const nav = useNavigate();
   const load = async () => setItems(await api.loadAllProperties());
   useEffect(() => { load(); }, []);
 

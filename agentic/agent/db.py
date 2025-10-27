@@ -61,3 +61,45 @@ def get_traveler_prefs(traveler_id:int):
         except Exception:
             return None
         return dict(row) if row else None
+
+
+    def ensure_chat_table():
+        """Create a simple chat_history table if it doesn't exist.
+        Columns: id (autoinc), booking_id (int), role (text), message (text), created_at (timestamp).
+        """
+        if SessionLocal is None or engine is None:
+            return False
+        with engine.begin() as conn:
+            conn.exec_driver_sql("""
+            CREATE TABLE IF NOT EXISTS chat_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                booking_id INTEGER,
+                role TEXT,
+                message TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """)
+        return True
+
+
+    def append_chat_message(booking_id:int, role:str, message:str):
+        if SessionLocal is None:
+            return False
+        with SessionLocal() as s:
+            try:
+                s.execute(text("INSERT INTO chat_history (booking_id, role, message) VALUES (:bid, :role, :msg)"), {"bid": booking_id, "role": role, "msg": message})
+                s.commit()
+            except Exception:
+                return False
+        return True
+
+
+    def get_chat_history(booking_id:int, limit:int=200):
+        if SessionLocal is None:
+            return []
+        with SessionLocal() as s:
+            try:
+                rows = s.execute(text("SELECT role, message, created_at FROM chat_history WHERE booking_id = :bid ORDER BY id ASC LIMIT :lim"), {"bid": booking_id, "lim": limit}).mappings().all()
+            except Exception:
+                return []
+        return [dict(r) for r in rows]

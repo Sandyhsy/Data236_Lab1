@@ -1,13 +1,19 @@
 # agent/main.py
-import os, asyncio
+import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from .models import ConciergeAsk, ConciergeResponse
+from .models import (
+    ConciergeAsk,
+    ConciergeChatRequest,
+    ConciergeChatResponse,
+    ConciergeResponse,
+)
 from .db import get_booking_with_user, get_traveler_prefs
 from .providers.weather import get_weather_daily
 from .planner import generate_concierge
+from .chat_agent import run_concierge_chat
 
 load_dotenv()
 
@@ -54,3 +60,24 @@ async def concierge(ask: ConciergeAsk):
     # 4) generate
     resp = await generate_concierge(ask, weather_daily=weather)
     return resp
+
+
+@app.post("/ai/concierge/chat", response_model=ConciergeChatResponse)
+async def concierge_chat(req: ConciergeChatRequest):
+    reply = await run_concierge_chat(
+        [msg.model_dump() for msg in req.messages],
+        req.context or {}
+    )
+    return ConciergeChatResponse(reply=reply)
+
+
+@app.get("/ai/health")
+async def health():
+    from .providers import llm as llmprov
+    return {
+        "ok": True,
+        "model": getattr(llmprov, "MODEL_NAME", None),
+        "gemini_key_present": bool(os.getenv("GEMINI_API_KEY")),
+        "tavily_key_present": bool(os.getenv("TAVILY_API_KEY")),
+        "openweather_key_present": bool(os.getenv("OPENWEATHER_API_KEY")),
+    }

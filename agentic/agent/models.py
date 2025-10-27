@@ -1,5 +1,5 @@
 # agent/models.py
-from typing import List, Optional, Literal
+from typing import List, Optional, Literal, Dict
 from pydantic import BaseModel, Field
 from datetime import date
 
@@ -47,3 +47,17 @@ class ConciergeResponse(BaseModel):
     restaurants: List[ActivityCard]
     packing_checklist: List[str]
     reasoning_notes: List[str] = Field(default_factory=list)  # optional, for debugging
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class ConciergeChatRequest(BaseModel):
+    messages: List[ChatMessage]
+    context: Dict = Field(default_factory=dict)
+
+
+class ConciergeChatResponse(BaseModel):
+    reply: str

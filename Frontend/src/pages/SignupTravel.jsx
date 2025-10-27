@@ -39,8 +39,8 @@ export default function SignupTravel({ onSignup }) {
                 <button className="btn btn-danger" type="submit">Create account</button>
               </div>
             </div>
+            {err && <div className="text-danger mt-2 small">{err}</div>}
           </form>
-          {err && <div className="text-danger mt-2 small">{err}</div>}
         </div>
       </div>
     </div>

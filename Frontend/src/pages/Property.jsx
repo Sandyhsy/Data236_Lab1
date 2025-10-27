@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { api } from "../api";
 import DatePicker from "react-datepicker";
@@ -77,7 +77,7 @@ export default function Property() {
     }
 
     try {
-      const resp = await api.createBooking({
+      await api.createBooking({
         property_id: Number(id),
         start_date: startDate,
         end_date: endDate,

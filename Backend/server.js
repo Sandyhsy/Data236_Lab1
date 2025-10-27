@@ -13,6 +13,7 @@ import propertyImageRoutes from "./routes/images.js";
 import profileRoutes from "./routes/profile.js";
 import searchRoutes from "./routes/search.js"
 import favoriteRoutes from "./routes/favorites.js"
+import aiRoutes from "./routes/ai.js";
 
 
 const app = express();
@@ -54,6 +55,7 @@ app.get("/api/health", (_req, res) => res.json({ ok: true }));
 app.use("/api",profileRoutes)
 app.use("/api/search", searchRoutes)
 app.use("/api/favorites", favoriteRoutes)
+app.use("/api/ai", aiRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));

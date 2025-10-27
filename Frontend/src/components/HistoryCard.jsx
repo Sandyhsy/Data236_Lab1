@@ -16,7 +16,7 @@ export default function HistoryCard({ b }) {
             style={{ cursor: "pointer" }}
           onClick={() => nav(`/property/${b.property_id}`)}
           >
-          <img className="img-cover" src="https://placehold.co/360x200?text=Property" />
+          <img className="img-cover" src="https://placehold.co/360x200?text=Property" alt={b.property_name || "Property image"} />
           <div className="fw-bold">{b.property_name}</div>
           <div className="d-flex flex-wrap gap-2 mt-2">
             <span className="badge text-bg-light">#{b.booking_id}</span>

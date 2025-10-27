@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import PropertyCard from "../components/PropertyCard";
 
 export default function FavoriteList() {
   const [items, setItems] = useState([]);
-  const nav = useNavigate();
   const load = async () => setItems(await api.myfavorites());
   useEffect(() => { load(); }, []);
 
