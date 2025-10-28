@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 
+const rawConcierge = (process.env.REACT_APP_CONCIERGE_URL || "/api/ai").replace(/\/$/, "");
+const conciergeBase = rawConcierge.endsWith("/ai") ? rawConcierge : `${rawConcierge}/ai`;
+
 function toKey(booking) {
   if (!booking) return "";
   return String(booking.booking_id ?? booking.id ?? "");
@@ -68,7 +71,7 @@ export default function ConciergeButton({ booking, bookings = [] }) {
     const loadHistory = async () => {
       setLoadingHistory(true);
       try {
-        const HISTORY_URL = (process.env.REACT_APP_CONCIERGE_URL || "http://localhost:8001") + `/ai/history?booking_id=${active.booking_id}`;
+        const HISTORY_URL = `${conciergeBase}/history?booking_id=${active.booking_id}`;
         const res = await fetch(HISTORY_URL);
         if (res.ok) {
           const body = await res.json();
@@ -126,7 +129,7 @@ export default function ConciergeButton({ booking, bookings = [] }) {
       guests: active.guests ?? null
     };
 
-    const CHAT_URL = (process.env.REACT_APP_CONCIERGE_URL || "http://localhost:8001") + "/ai/chat";
+    const CHAT_URL = `${conciergeBase}/chat`;
     setLoading(true);
     setTyping(true);
     setMessages(prev => [...prev, { role: "user", text }] );

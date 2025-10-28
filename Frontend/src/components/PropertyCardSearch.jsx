@@ -1,12 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-export default function PropertyCardSearch({ p, onEdit, onDelete }) {
 
-  const nav = useNavigate();
-
+export default function PropertyCard({ p, onEdit, onDelete }) {
   return (
-    <div className="card h-100" style={{ cursor: "pointer" }} onClick={() => nav(`/property/${p.property_id}`)}>
-      <img src={p.first_image_url || "https://placehold.co/360x200?text=Property"} alt={p.name} />
+    <div className="card h-100">
+      {p.first_image_url && <img className="img-cover" src={p.first_image_url} alt={p.name} />}
       <div className="card-body d-flex flex-column">
         <h5 className="card-title fw-bold">{p.name}</h5>
         <div className="mb-2 d-flex flex-wrap gap-2">
@@ -17,6 +14,9 @@ export default function PropertyCardSearch({ p, onEdit, onDelete }) {
           {p.price_per_night != null && <span className="badge text-bg-danger">${Number(p.price_per_night).toFixed(2)}/night</span>}
         </div>
         {p.description && <p className="text-secondary small mb-3">{p.description}</p>}
+        <div className="mt-auto d-flex gap-2">
+  
+        </div>
       </div>
     </div>
   );

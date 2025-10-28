@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 
+const rawConcierge = (process.env.REACT_APP_CONCIERGE_URL || "/api/ai").replace(/\/$/, "");
+const conciergeBase = rawConcierge.endsWith("/ai") ? rawConcierge : `${rawConcierge}/ai`;
+
 function toKey(booking) {
   if (!booking) return "";
   return String(booking.booking_id ?? booking.id ?? "");
@@ -91,7 +94,7 @@ export default function ConciergeChat({
     setPending(true);
     setError(null);
 
-    const CONCIERGE_URL = (process.env.REACT_APP_CONCIERGE_URL || "http://localhost:8001") + "/ai/concierge/chat";
+    const CONCIERGE_URL = `${conciergeBase}/concierge/chat`;
     try {
       const payload = {
         messages: [...conversation, { role: "user", content: trimmed }],
