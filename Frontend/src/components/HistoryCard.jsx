@@ -8,6 +8,8 @@ export default function HistoryCard({ b }) {
   const start = new Date(b.start_date).toISOString().split("T")[0];
   const end = new Date(b.end_date).toISOString().split("T")[0];
 
+  const photo = b.first_image_url || "https://placehold.co/360x200?text=Property";
+
   return (
     <div className="card">
       <button
@@ -19,7 +21,8 @@ export default function HistoryCard({ b }) {
         <div>
           <img
             className="img-cover"
-            src="https://placehold.co/360x200?text=Property"
+            src={photo}
+            onError={(e) => { e.currentTarget.src = "https://placehold.co/360x200?text=Property"; }}
             alt={b.property_name || "Property image"}
           />
           <div className="fw-bold">{b.property_name}</div>

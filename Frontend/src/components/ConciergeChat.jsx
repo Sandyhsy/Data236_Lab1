@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 
-const rawConcierge = (process.env.REACT_APP_CONCIERGE_URL || "/api/ai").replace(/\/$/, "");
-const conciergeBase = rawConcierge.endsWith("/ai") ? rawConcierge : `${rawConcierge}/ai`;
+// Use direct backend URL since we removed the proxy
+const rawConcierge = process.env.REACT_APP_CONCIERGE_URL || 
+  (process.env.REACT_APP_API_URL || "http://localhost:4000/api") + "/ai";
+const conciergeBase = rawConcierge.replace(/\/$/, "").endsWith("/ai") 
+  ? rawConcierge.replace(/\/$/, "")
+  : `${rawConcierge.replace(/\/$/, "")}/ai`;
 
 function toKey(booking) {
   if (!booking) return "";
@@ -31,6 +35,19 @@ function splitLines(text) {
       {line}
     </p>
   ));
+}
+
+function enrichBookingLocation(booking) {
+  if (!booking || typeof booking !== "object") return booking;
+  const location =
+    booking.location ||
+    booking.property_location ||
+    booking.address ||
+    null;
+  if (!location || booking.location === location) {
+    return booking;
+  }
+  return { ...booking, location };
 }
 
 export default function ConciergeChat({
@@ -96,19 +113,24 @@ export default function ConciergeChat({
 
     const CONCIERGE_URL = `${conciergeBase}/concierge/chat`;
     try {
+      const activeBooking = selectedBooking ? enrichBookingLocation(selectedBooking) : null;
+      const bookingLocation = activeBooking?.location ?? null;
+      const bookingsWithLocation = bookings.map(enrichBookingLocation);
       const payload = {
         messages: [...conversation, { role: "user", content: trimmed }],
         context: {
           traveler: user,
           active_booking_id: selectedBooking?.booking_id ?? selectedBooking?.id ?? null,
-          active_booking: selectedBooking,
-          bookings
+          active_booking: activeBooking,
+          bookings: bookingsWithLocation,
+          active_booking_location: bookingLocation
         }
       };
 
       const res = await fetch(CONCIERGE_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload)
       });
 

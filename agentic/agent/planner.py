@@ -1,5 +1,5 @@
 # agent/planner.py
-from datetime import timedelta, date as dt_date
+from datetime import datetime, timedelta, date as dt_date
 from typing import List, Dict, Any
 from .models import ConciergeAsk, ConciergeResponse, DayPlan, ActivityCard
 from .providers.search import search_pois
@@ -95,17 +95,54 @@ async def generate_concierge(ask:ConciergeAsk, weather_daily:Dict|None=None) -> 
     dietary = p.get("dietary","none")
     location = b.location
 
-    # weather-aware packing
+    # weather-aware packing and forecast context
     packing = []
+    weather_forecast: List[Dict[str, Any]] = []
+    weather_summary_text = None
     if weather_daily:
-        # inspect first day
-        day0 = weather_daily["daily"][0]
-        maxc = day0["temp"]["max"]
-        minc = day0["temp"]["min"]
-        if maxc >= 28: packing += ["sunscreen","hat","light clothing","reusable water bottle"]
-        if minc <= 10: packing += ["warm jacket","layers","beanie"]
-        if any(w["id"]//100 in (2,3,5) for w in day0["weather"]):  # rain groups
-            packing += ["rain jacket","compact umbrella","waterproof shoes"]
+        daily_list = weather_daily.get("daily") or []
+        if daily_list:
+            # capture up to 5-day forecast summary for downstream prompts
+            for entry in daily_list[:5]:
+                ts = entry.get("dt")
+                date_str = datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d") if ts else None
+                temps = entry.get("temp") or {}
+                weather_forecast.append({
+                    "date": date_str,
+                    "description": (entry.get("weather") or [{}])[0].get("description"),
+                    "temp_min_c": temps.get("min"),
+                    "temp_max_c": temps.get("max"),
+                    "precip_probability": entry.get("pop"),
+                })
+
+            if weather_forecast:
+                pieces = []
+                for entry in weather_forecast[:3]:
+                    date_str = entry.get("date") or "Unknown date"
+                    desc = entry.get("description") or "Unknown conditions"
+                    maxc = entry.get("temp_max_c")
+                    minc = entry.get("temp_min_c")
+                    part = f"{date_str}: {desc}"
+                    temp_bit = []
+                    if maxc is not None:
+                        temp_bit.append(f"high {round(float(maxc),1)}°C")
+                    if minc is not None:
+                        temp_bit.append(f"low {round(float(minc),1)}°C")
+                    if temp_bit:
+                        part += f" ({' / '.join(temp_bit)})"
+                    pieces.append(part)
+                if pieces:
+                    weather_summary_text = "; ".join(pieces)
+
+            day0 = daily_list[0]
+            maxc = (day0.get("temp") or {}).get("max")
+            minc = (day0.get("temp") or {}).get("min")
+            if maxc is not None and maxc >= 28:
+                packing += ["sunscreen","hat","light clothing","reusable water bottle"]
+            if minc is not None and minc <= 10:
+                packing += ["warm jacket","layers","beanie"]
+            if any((w or {}).get("id", 0)//100 in (2,3,5) for w in (day0.get("weather") or [])):  # rain groups
+                packing += ["rain jacket","compact umbrella","waterproof shoes"]
     packing = list(dict.fromkeys(packing)) or ["comfortable shoes","daypack","charger"]
 
     # build day-by-day suggestions
@@ -157,6 +194,8 @@ async def generate_concierge(ask:ConciergeAsk, weather_daily:Dict|None=None) -> 
         "Source: Tavily web search results (titles/snippets normalized).",
         "Gemini assistance unavailable; returning heuristic itinerary."
     ]
+    if weather_summary_text:
+        notes.append("Weather outlook: " + weather_summary_text)
 
     base_response = ConciergeResponse(
         plan=dayplans,
@@ -176,9 +215,11 @@ async def generate_concierge(ask:ConciergeAsk, weather_daily:Dict|None=None) -> 
         },
         "preferences": p,
         "weather": None,
+        "weather_forecast": weather_forecast,
         "day_suggestions": day_suggestions,
         "restaurant_suggestions": restaurant_suggestions,
-        "default_packing": packing
+        "default_packing": packing,
+        "weather_overview": weather_summary_text,
     }
 
     if weather_daily:
@@ -189,6 +230,8 @@ async def generate_concierge(ask:ConciergeAsk, weather_daily:Dict|None=None) -> 
             "temp_max_c": today.get("temp", {}).get("max"),
             "precip_probability": today.get("pop"),
         }
+        if weather_forecast:
+            payload["weather"]["forecast"] = weather_forecast
 
     llm_result = await generate_plan_with_gemini(payload)
     if not llm_result:

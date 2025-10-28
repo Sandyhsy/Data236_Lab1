@@ -10,6 +10,7 @@ router.get("/", async (req, res) => {
     `
     SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
     p.name AS property_name, 
+    p.location AS property_location,
     (
       SELECT i.url
       FROM property_images i
@@ -35,6 +36,7 @@ router.get("/status", async (req, res) => {
     `
     SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
     p.name AS property_name, 
+    p.location AS property_location,
     (
       SELECT i.url
       FROM property_images i
@@ -44,7 +46,7 @@ router.get("/status", async (req, res) => {
     ) AS first_image_url
     FROM bookings b
     JOIN properties p ON b.property_id = p.property_id
-    WHERE b.traveler_id = ? and b.status = 'ACCEPTED' and DATE(start_date) >= CURDATE()
+    WHERE b.traveler_id = ? and b.status = 'ACCEPTED' and DATE(end_date) >= CURDATE()
     ORDER BY b.created_at DESC;
     `,
     [user_id]
@@ -54,6 +56,7 @@ router.get("/status", async (req, res) => {
     `
     SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
     p.name AS property_name, 
+    p.location AS property_location,
     (
       SELECT i.url
       FROM property_images i
@@ -74,6 +77,7 @@ router.get("/status", async (req, res) => {
     `
     SELECT b.booking_id, b.traveler_id, b.property_id, b.start_date, b.end_date, b.guests, b.status, b.created_at,
     p.name AS property_name, 
+    p.location AS property_location,
     (
       SELECT i.url
       FROM property_images i
@@ -105,6 +109,35 @@ router.post("/", async (req, res) => {
 
   const startDate = new Date(start_date);
   const endDate = new Date(end_date);
+
+  if (!property_id || !start_date || !end_date) {
+    return res.status(400).json({ error: "Missing property or date selection" });
+  }
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return res.status(400).json({ error: "Invalid booking dates" });
+  }
+
+  if (startDate >= endDate) {
+    return res.status(400).json({ error: "Check-out date must be after check-in date" });
+  }
+
+  if (endDate <= new Date()) {
+    return res.status(400).json({ error: "Booking dates must be in the future" });
+  }
+
+  const [conflicts] = await pool.query(
+    `SELECT COUNT(*) AS c
+     FROM bookings
+     WHERE property_id = ?
+       AND status = 'ACCEPTED'
+       AND NOT (end_date <= ? OR start_date >= ?)`,
+    [property_id, startDate, endDate]
+  );
+
+  if (conflicts[0]?.c > 0) {
+    return res.status(409).json({ error: "Selected dates are no longer available" });
+  }
 
   const [booking] = await pool.query(
     `INSERT INTO bookings  (traveler_id, property_id, start_date, end_date, guests, status) values (?,?,?,?,?,?)`,

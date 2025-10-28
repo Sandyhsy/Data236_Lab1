@@ -23,7 +23,7 @@ from .db import (
     get_chat_history,
     get_traveler_prefs,
 )
-from .providers.weather import get_weather_daily
+from .providers.weather import geocode_location, get_weather_daily
 from .planner import generate_concierge
 from .chat_agent import run_concierge_chat
 
@@ -54,17 +54,27 @@ def _coerce_date(value: Any) -> date:
 async def _build_concierge_response(ask: ConciergeAsk) -> ConciergeResponse:
     # 1) if booking_id present, hydrate from DB
     booking = ask.booking
-    if booking.booking_id and not booking.location:
+    if booking.booking_id:
         row = get_booking_with_user(booking.booking_id)
         if not row: raise HTTPException(404, "Booking not found")
-        booking.location = row["location"]
-        booking.guests = booking.guests or row["guests"]
-        booking.party_type = booking.party_type or row["party_type"]
+        booking.location = row.get("location") or booking.location
+        booking.address = booking.address or row.get("property_address") or row.get("location")
+        booking.guests = booking.guests or row.get("guests")
+        booking.party_type = booking.party_type or row.get("party_type")
+
+    if booking.address and not booking.location:
+        booking.location = booking.address
 
     if not booking.location:
         raise HTTPException(400, "location required (in booking or via booking_id)")
 
-    # 2) geocoding is out-of-scope here; if lat/lon missing, skip weather gracefully
+    target_location = booking.address or booking.location
+    if target_location and (booking.lat is None or booking.lon is None):
+        coords = await geocode_location(target_location)
+        if coords:
+            booking.lat, booking.lon = coords
+
+    # 2) Fetch weather when coordinates are available
     weather = None
     if booking.lat is not None and booking.lon is not None:
         try:
@@ -91,9 +101,50 @@ async def concierge(ask: ConciergeAsk):
 
 @app.post("/ai/concierge/chat", response_model=ConciergeChatResponse)
 async def concierge_chat(req: ConciergeChatRequest):
+    context = dict(req.context or {})
+
+    active_booking = context.get("active_booking")
+    active_location = None
+    if isinstance(active_booking, dict):
+        active_location = (
+            active_booking.get("location")
+            or active_booking.get("property_location")
+            or active_booking.get("address")
+        )
+        if active_location and active_booking.get("location") != active_location:
+            active_booking = dict(active_booking)
+            active_booking["location"] = active_location
+            context["active_booking"] = active_booking
+        elif active_booking is not None:
+            context["active_booking"] = active_booking
+
+    bookings_ctx = context.get("bookings")
+    if isinstance(bookings_ctx, list):
+        updated = []
+        mutated = False
+        for entry in bookings_ctx:
+            if isinstance(entry, dict):
+                ctx_loc = (
+                    entry.get("location")
+                    or entry.get("property_location")
+                    or entry.get("address")
+                )
+                if ctx_loc and entry.get("location") != ctx_loc:
+                    entry = dict(entry)
+                    entry["location"] = ctx_loc
+                    mutated = True
+                updated.append(entry)
+            else:
+                updated.append(entry)
+        if mutated:
+            context["bookings"] = updated
+
+    if active_location:
+        context["active_booking_location"] = active_location
+
     reply = await run_concierge_chat(
         [msg.model_dump() for msg in req.messages],
-        req.context or {}
+        context
     )
     return ConciergeChatResponse(reply=reply)
 
@@ -119,7 +170,8 @@ async def concierge_chat_legacy(payload: LegacyChatRequest):
     try:
         booking = BookingContext(
             booking_id=booking_raw.get("booking_id") or booking_raw.get("id"),
-            location=booking_raw.get("location"),
+            location=booking_raw.get("location") or booking_raw.get("property_location"),
+            address=booking_raw.get("address") or booking_raw.get("property_address"),
             lat=booking_raw.get("lat"),
             lon=booking_raw.get("lon"),
             start_date=_coerce_date(start_raw),
@@ -139,6 +191,12 @@ async def concierge_chat_legacy(payload: LegacyChatRequest):
 
     ask = ConciergeAsk(booking=booking, prefs=prefs_model, free_text=payload.message)
     concierge = await _build_concierge_response(ask)
+    if ask.booking.location:
+        booking_raw["location"] = ask.booking.location
+        booking_raw["property_location"] = ask.booking.location
+    if ask.booking.address:
+        booking_raw["address"] = ask.booking.address
+        booking_raw["property_address"] = ask.booking.address
 
     # Persist conversation if DB is available
     ensure_chat_table()

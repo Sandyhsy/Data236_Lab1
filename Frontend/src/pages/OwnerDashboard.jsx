@@ -33,8 +33,27 @@ export default function OwnerDashboard() {
 
   useEffect(() => { load(); }, []);
 
-  const accept = async (b) => { await api.acceptBooking(b.booking_id); await load(); };
-  const cancel = async (b) => { await api.cancelBooking(b.booking_id); await load(); };
+  const accept = async (b) => {
+    try {
+      await api.acceptBooking(b.booking_id);
+      alert("Booking accepted");
+    } catch (e) {
+      alert(e.message || "Failed to accept booking");
+    } finally {
+      await load();
+    }
+  };
+
+  const cancel = async (b) => {
+    try {
+      await api.cancelBooking(b.booking_id);
+      alert("Booking cancelled");
+    } catch (e) {
+      alert(e.message || "Failed to cancel booking");
+    } finally {
+      await load();
+    }
+  };
 
   if (loading) return <div className="container py-4"><div className="alert alert-light">Loading...</div></div>;
 

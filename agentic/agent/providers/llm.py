@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover - dependency optional at runtime
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 # Use Gemini 2f Flash model for concise, fast responses. Change if you want a different variant.
-MODEL_NAME = "gemini-2f-flash"
+MODEL_NAME ="gemini-2.5-flash"
 
 _model = None
 _model_error: Optional[Exception] = None
@@ -65,6 +65,7 @@ async def generate_plan_with_gemini(payload: Dict[str, Any]) -> Optional[Dict[st
         "Rules:\n"
         "- Respect traveler preferences and any flags in the context.\n"
         "- Prefer provided activity suggestions, but you may add light variations if helpful.\n"
+        "- When weather details are provided, highlight notable conditions (temperature swings, rain chances) within the itinerary or reasoning notes.\n"
         "- Return ONLY valid JSON matching the schema. No prose.\n"
     )
 

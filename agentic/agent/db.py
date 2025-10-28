@@ -36,11 +36,22 @@ def get_booking_with_user(booking_id:int):
     with SessionLocal() as s:
         try:
             row = s.execute(text("""
-                SELECT b.id, b.traveler_id, b.location, b.start_date, b.end_date, b.guests, b.party_type,
-                       u.name as traveler_name
+                SELECT
+                    b.booking_id,
+                    b.traveler_id,
+                    b.property_id,
+                    b.start_date,
+                    b.end_date,
+                    b.guests,
+                    NULL AS party_type,
+                    p.location AS location,
+                    p.location AS property_address,
+                    p.name AS property_name,
+                    u.name AS traveler_name
                 FROM bookings b
-                JOIN users u ON u.id = b.traveler_id
-                WHERE b.id = :bid
+                JOIN properties p ON p.property_id = b.property_id
+                JOIN users u ON u.user_id = b.traveler_id
+                WHERE b.booking_id = :bid
             """), {"bid": booking_id}).mappings().first()
         except Exception:
             return None

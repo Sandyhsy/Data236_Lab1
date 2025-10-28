@@ -124,6 +124,7 @@ export default function Property() {
         property_id: Number(id),
         start_date: startDate,
         end_date: endDate,
+        guests: guestCount,
       });
       alert("Booking request submitted");
     } catch (e) {

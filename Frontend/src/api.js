@@ -1,6 +1,7 @@
 
 
 // Global API helper using Fetch. Cookies included for session-based auth.
+// Direct connection to backend API (CORS configured on backend)
 const BASE = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
 
 async function req(path, { method = "GET", body } = {}) {
