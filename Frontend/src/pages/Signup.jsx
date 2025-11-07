@@ -29,14 +29,14 @@ export default function Signup({ onSignup }) {
               </div>
               <div className="col-md-6">
                 <label className="form-label">Email</label>
-                <input className="form-control" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
+                <input className="form-control" type="email"value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
               </div>
               <div className="col-md-6">
                 <label className="form-label">Password</label>
                 <input className="form-control" type="password" value={form.password} onChange={e=>setForm({...form, password:e.target.value})}/>
               </div>
               <div className="col-md-3">
-                <label className="form-label">City</label>
+                <label className="form-label">State</label>
                 <input className="form-control" value={form.city} onChange={e=>setForm({...form, city:e.target.value})}/>
               </div>
               <div className="col-md-3">
