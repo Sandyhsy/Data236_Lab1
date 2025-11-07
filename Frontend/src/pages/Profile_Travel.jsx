@@ -165,7 +165,7 @@ export default function Profile() {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">City</label>
+                    <label className="form-label">State</label>
                     <RegionDropdown
                       country={form.country}
                       value={form.city}
