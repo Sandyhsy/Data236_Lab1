@@ -142,7 +142,10 @@ export default function Profile() {
                     <label className="form-label">Phone</label>
                     <input
                       className="form-control"
+                      type="tel"
                       value={form.phone}
+                      inputMode="numeric"
+                      pattern="^\d{10}$"
                       onChange={e=>setForm({...form, phone:e.target.value})}
                     />
                   </div>
