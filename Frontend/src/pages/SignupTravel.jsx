@@ -29,7 +29,7 @@ export default function SignupTravel({ onSignup }) {
               </div>
               <div className="col-md-6">
                 <label className="form-label">Email</label>
-                <input className="form-control" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
+                <input className="form-control" type="email" value={form.email} onChange={e=>setForm({...form, email:e.target.value})}/>
               </div>
               <div className="col-md-6">
                 <label className="form-label">Password</label>
