@@ -64,7 +64,19 @@ export default function Property() {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [excludeDates, setExcludeDates] = useState([]);
-
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  function ensureValidEndDate(s, e) {
+    const sMid = new Date(s); sMid.setHours(0, 0, 0, 0);
+    const eMid = new Date(e); eMid.setHours(0, 0, 0, 0);
+    if (eMid <= sMid) {
+      const next = new Date(sMid);
+      next.setDate(next.getDate() + 1);
+      return next;
+    }
+    return e;
+  }
+  
   useEffect(() => {
     async function init() {
       const p = await api.getProperty(id);
@@ -124,7 +136,6 @@ export default function Property() {
         property_id: Number(id),
         start_date: startDate,
         end_date: endDate,
-        guests: guestCount,
       });
       alert("Booking request submitted");
     } catch (e) {
@@ -185,22 +196,42 @@ export default function Property() {
               <div className="row g-2">
                 <div className="col-12 col-md-6">
                   <label className="form-label">Check-in:</label>
-                  <DatePicker
+                  {/* <DatePicker
                     selected={startDate}
                     onChange={(date) => setStartDate(date)}
                     excludeDateIntervals={excludeDates}
                     placeholderText="Choose a check-in date"
                     className="form-control"
+                  /> */}
+                  <DatePicker
+                    selected={startDate}
+                    onChange={(date) => {
+                      setStartDate(date);
+                      // keep endDate valid (at least 1 day after start)
+                      setEndDate(prev => ensureValidEndDate(date, prev));
+                    }}
+                    minDate={today}             // cannot pick a date before today
+                    selectsStart
+                    startDate={startDate}
+                    endDate={endDate}
                   />
                 </div>
                 <div className="col-12 col-md-6">
                   <label className="form-label">Check-out:</label>
-                  <DatePicker
+                  {/* <DatePicker
                     selected={endDate}
                     onChange={(date) => setEndDate(date)}
                     excludeDateIntervals={excludeDates}
                     placeholderText="Choose a check-out date"
                     className="form-control"
+                  /> */}
+                  <DatePicker
+                    selected={endDate}
+                    onChange={(date) => setEndDate(date)}
+                    minDate={startDate ? startDate : today}
+                    selectsEnd
+                    startDate={startDate}
+                    endDate={endDate}
                   />
                 </div>
                 <div className="col-12 col-md-6">
