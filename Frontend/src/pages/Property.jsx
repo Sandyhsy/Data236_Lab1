@@ -65,7 +65,7 @@ export default function Property() {
   const [endDate, setEndDate] = useState(new Date());
   const [excludeDates, setExcludeDates] = useState([]);
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0); 
   function ensureValidEndDate(s, e) {
     const sMid = new Date(s); sMid.setHours(0, 0, 0, 0);
     const eMid = new Date(e); eMid.setHours(0, 0, 0, 0);
@@ -76,7 +76,7 @@ export default function Property() {
     }
     return e;
   }
-  
+
   useEffect(() => {
     async function init() {
       const p = await api.getProperty(id);
@@ -196,21 +196,13 @@ export default function Property() {
               <div className="row g-2">
                 <div className="col-12 col-md-6">
                   <label className="form-label">Check-in:</label>
-                  {/* <DatePicker
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)}
-                    excludeDateIntervals={excludeDates}
-                    placeholderText="Choose a check-in date"
-                    className="form-control"
-                  /> */}
                   <DatePicker
                     selected={startDate}
                     onChange={(date) => {
                       setStartDate(date);
-                      // keep endDate valid (at least 1 day after start)
                       setEndDate(prev => ensureValidEndDate(date, prev));
                     }}
-                    minDate={today}             // cannot pick a date before today
+                    minDate={today}         
                     selectsStart
                     startDate={startDate}
                     endDate={endDate}
@@ -218,13 +210,6 @@ export default function Property() {
                 </div>
                 <div className="col-12 col-md-6">
                   <label className="form-label">Check-out:</label>
-                  {/* <DatePicker
-                    selected={endDate}
-                    onChange={(date) => setEndDate(date)}
-                    excludeDateIntervals={excludeDates}
-                    placeholderText="Choose a check-out date"
-                    className="form-control"
-                  /> */}
                   <DatePicker
                     selected={endDate}
                     onChange={(date) => setEndDate(date)}
@@ -244,6 +229,7 @@ export default function Property() {
                     className="form-control"
                   />
                 </div>
+                
                 <div className="col-12 col-md-6">
                   <button className="btn btn-success mt-4"
                     onClick={handleSubmitBooking}
