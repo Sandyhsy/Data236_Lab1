@@ -64,6 +64,7 @@ export default function Property() {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [excludeDates, setExcludeDates] = useState([]);
+  const maxGuests = Math.max(1, Number(property?.bedrooms || 0) || 1);
   const today = new Date();
   today.setHours(0, 0, 0, 0); 
   function ensureValidEndDate(s, e) {
@@ -92,6 +93,7 @@ export default function Property() {
         first_image_url: p.first_image_url || "",
         photos: Array.isArray(p.photos) ? p.photos : []
       });
+      setGuestCount((prev) => Math.min(Math.max(1, prev || 1), Math.max(1, Number(p.bedrooms || 0) || 1)));
       // setExcludeDates(Array.isArray(d) ? d : []);
     }
     init();
@@ -224,12 +226,17 @@ export default function Property() {
                   <input
                     type="number"
                     min={1}
+                    max={maxGuests} 
                     value={guestCount}
-                    onChange={(i) => setGuestCount(Number(i.target.value))}
+                    onChange={(e) => {
+                      const raw = Number(e.target.value);
+                      const clamped = Math.min(Math.max(1, isNaN(raw) ? 1 : raw), maxGuests);
+                      setGuestCount(clamped);
+                    }}
                     className="form-control"
                   />
+                  <small className="text-muted">Up to {maxGuests} {maxGuests === 1 ? "guest" : "guests"} allowed based on bedrooms.</small>
                 </div>
-                
                 <div className="col-12 col-md-6">
                   <button className="btn btn-success mt-4"
                     onClick={handleSubmitBooking}
@@ -241,10 +248,8 @@ export default function Property() {
 
             </div>
           </div>
-
         </div>
       </div>
     </div>
-
   );
 }
