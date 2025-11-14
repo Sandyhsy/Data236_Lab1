@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { pool } from "../db.js";
 import { requireOwner } from "../middleware/requireOwner.js";
+import { producer } from "../server.js";
 
 const router = Router();
 
@@ -121,6 +122,16 @@ router.post("/", async (req, res) => {
     `INSERT INTO bookings  (traveler_id, property_id, start_date, end_date, guests, status) values (?,?,?,?,?,?)`,
     [user_id, property_id, startDate, endDate, guests, 'PENDING']
   );
+
+      const bookingEvent = {
+        booking_id: booking.insertId,
+        status: "PENDING",
+      };
+        await producer.send({
+        topic: "booking_req",
+        messages: [{ key: String(booking.insertId), value: JSON.stringify(bookingEvent) }],
+      });
+
   res.json(booking)
 })
 
@@ -152,6 +163,13 @@ async function getOwnedBooking(bookingId, ownerId) {
   return rows[0];
 }
 
+export function updateBookingKafka(subscribeKafka) {
+  subscribeKafka("booking_stat", async (evt) => {
+    await pool.query("UPDATE bookings SET status = ? WHERE booking_id = ?", [evt.status, evt.booking_id]);
+    console.log(`Booking update: ${evt.booking_id} status to ${evt.status} with Kafka`);
+  });
+}
+
 // PATCH /api/bookings/:id/accept - accept if dates are free
 router.patch("/:id/accept", requireOwner, async (req, res) => {
   const { user_id } = req.session.user;
@@ -168,14 +186,27 @@ router.patch("/:id/accept", requireOwner, async (req, res) => {
      WHERE property_id = ?
        AND status = 'ACCEPTED'
        AND NOT (end_date <= ? OR start_date >= ?)`,
+    // [booking.property_id, booking.start_date, booking.end_date]
     [booking.property_id, booking.start_date, booking.end_date]
   );
   if (conflicts[0].c > 0) {
     return res.status(409).json({ error: "Date conflict with an existing accepted booking" });
   }
 
-  await pool.query("UPDATE bookings SET status = 'ACCEPTED' WHERE booking_id = ?", [id]);
+  // await pool.query("UPDATE bookings SET status = 'ACCEPTED' WHERE booking_id = ?", [id]);
+  
+  await producer.send({
+    topic: "booking_stat",
+    messages: 
+    [{ 
+    key: String(id), 
+    value: JSON.stringify({ booking_id: id, status: "ACCEPTED", owner_id: user_id }) 
+    }],
+  });
+
+
   res.json({ message: "Booking accepted" });
+
 });
 
 // PATCH /api/bookings/:id/cancel
@@ -186,7 +217,17 @@ router.patch("/:id/cancel", requireOwner, async (req, res) => {
   const booking = await getOwnedBooking(id, user_id);
   if (!booking) return res.status(404).json({ error: "Booking not found" });
 
-  await pool.query("UPDATE bookings SET status = 'CANCELLED' WHERE booking_id = ?", [id]);
+  // await pool.query("UPDATE bookings SET status = 'CANCELLED' WHERE booking_id = ?", [id]);
+
+  await producer.send({
+    topic: "booking_stat",
+    messages: 
+    [{ 
+    key: String(id), 
+    value: JSON.stringify({ booking_id: id, status: "CANCELLED", owner_id: user_id }) 
+    }],
+  });
+
   res.json({ message: "Booking cancelled" });
 });
 
@@ -206,6 +247,9 @@ router.get("/bookedDates/:id", async (req, res) => {
     }
   }
   )
+
+
+
 
   res.json(intervals);
 

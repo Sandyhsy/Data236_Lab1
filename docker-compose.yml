@@ -1,0 +1,11 @@
+services:
+  redpanda:
+    image: redpandadata/redpanda:v23.3.16
+    command: >
+      redpanda start
+      --kafka-addr 0.0.0.0:9092
+      --advertise-kafka-addr 127.0.0.1:9092
+      --overprovisioned --smp 1 --memory 1G --reserve-memory 0M --node-id 0
+    ports:
+      - "9092:9092"
+      - "9644:9644"  
